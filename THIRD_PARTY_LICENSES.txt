@@ -1127,6 +1127,7 @@ var program = `// Copyright 2013 The Go Authors. All rights reserved.
 // Copyright 2016 The Go Authors. All rights reserved.
 // Copyright 2010 The Go Authors. All rights reserved.
 // Copyright 2012 The Go Authors. All rights reserved.
+# Portions created by the Initial Developer are Copyright (C) 1994-2000
 // Copyright 2018 The Go Authors. All rights reserved.
 // Copyright 2015 The Go Authors. All rights reserved.
 Copyright (c) 2014 Kyle Isom <kyle@gokyle.org>
@@ -1181,6 +1182,7 @@ Copyright (c) 2017 The CC Authors. All rights reserved.
 // Copyright 2017 The CC Authors. All rights reserved.
 Copyright © 2009 Free Software Foundation, Inc. <https://fsf.org/>
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+# Copyright (c) 1991-2011 Unicode, Inc.
 
 ======== Dependencies Summary
 modernc.org/cc
@@ -3352,6 +3354,7 @@ Copyright 2018 Google LLC
 github.com/Azure/azure-sdk-for-go
 -------- Copyrights
    Copyright 2016 Microsoft Corporation
+Copyright 2014-2017 Microsoft
 // Copyright 2019 Microsoft Corporation
 // Copyright 2018 Microsoft Corporation
 // Copyright 2017 Microsoft Corporation
@@ -3392,10 +3395,13 @@ github.com/NYTimes/gziphandler
 -------- Dependency
 github.com/OneOfOne/xxhash
 -------- Copyrights
+* The C implementation is ([Copyright](https://github.com/Cyan4973/xxHash/blob/master/LICENSE) (c) 2012-2014, Yann Collet)
 
 -------- Dependency
 github.com/aws/aws-sdk-go
 -------- Copyrights
+Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved. 
+Copyright 2014-2015 Stripe, Inc.
 // Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // Portions Licensed under the MIT License. Copyright (c) 2016 Carl Jackson
 -------- Notices
@@ -3438,6 +3444,7 @@ github.com/containerd/console
 github.com/containerd/containerd
 -------- Copyrights
    Copyright 2013-2016 Docker, Inc.
+Copyright 2012-2015 Docker, Inc.
 	// Copyright (C) 1999-2008 Novell Inc.
 	// Copyright 2009-2012 Canonical Ltd.
 -------- Notices
@@ -3474,6 +3481,7 @@ github.com/containernetworking/cni
 -------- Dependency
 github.com/coreos/etcd
 -------- Copyrights
+Copyright 2014 CoreOS, Inc
 // Copyright 2016 The etcd Authors
 // Copyright 2017 The etcd Authors
 // Copyright 2018 The etcd Authors
@@ -3500,6 +3508,7 @@ github.com/coreos/go-etcd
 -------- Dependency
 github.com/coreos/go-oidc
 -------- Copyrights
+Copyright 2014 CoreOS, Inc
 -------- Notices
 CoreOS Project
 Copyright 2014 CoreOS, Inc
@@ -3516,6 +3525,7 @@ github.com/coreos/go-semver
 -------- Dependency
 github.com/coreos/go-systemd
 -------- Copyrights
+Copyright 2018 CoreOS, Inc
 // Copyright 2018 CoreOS, Inc.
 // Copyright 2015 CoreOS, Inc.
 // Copyright 2014 Docker, Inc.
@@ -3535,6 +3545,7 @@ This product includes software developed at CoreOS, Inc.
 -------- Dependency
 github.com/coreos/pkg
 -------- Copyrights
+Copyright 2014 CoreOS, Inc
 // Copyright 2015 CoreOS, Inc.
 // Copyright 2016 CoreOS, Inc.
 // Copyright 2016 CoreOS Inc
@@ -3549,6 +3560,7 @@ This product includes software developed at CoreOS, Inc.
 -------- Dependency
 github.com/coreos/prometheus-operator
 -------- Copyrights
+Copyright 2015 CoreOS, Inc
 // Copyright 2019 The prometheus-operator Authors
 // Copyright 2016 The prometheus-operator Authors
 // Copyright 2018 The prometheus-operator Authors
@@ -3588,6 +3600,7 @@ github.com/docker/distribution
 github.com/docker/docker
 -------- Copyrights
    Copyright 2013-2018 Docker, Inc.
+Copyright 2012-2017 Docker, Inc.
 Copyright (c) 2013 Honza Pokorny
 Copyright 2015 The Kubernetes Authors.
 	// Copyright (C) 1999-2008 Novell Inc.
@@ -3628,10 +3641,12 @@ github.com/docker/go-connections
 github.com/docker/go-units
 -------- Copyrights
    Copyright 2015 Docker, Inc.
+Copyright © 2015 Docker, Inc.
 
 -------- Dependency
 github.com/docker/libnetwork
 -------- Copyrights
+Code and documentation copyright 2015 Docker, inc. Code released under the Apache 2.0 license. Docs released under Creative commons.
 Copyright (c) 2014-2016 The Docker & Go Authors. All rights reserved.
 // Copyright 2014-2016 The Docker & Go Authors. All rights reserved.
 
@@ -3639,6 +3654,7 @@ Copyright (c) 2014-2016 The Docker & Go Authors. All rights reserved.
 github.com/docker/spdystream
 -------- Copyrights
    Copyright 2014-2015 Docker, Inc.
+Copyright © 2014-2015 Docker, Inc. All rights reserved, except as follows. Code is released under the Apache 2.0 license. The README.md file, and files in the "docs" folder are licensed under the Creative Commons Attribution 4.0 International License under the terms and conditions set forth in the file "LICENSE.docs". You may obtain a duplicate copy of the same license, titled CC-BY-SA-4.0, at http://creativecommons.org/licenses/by/4.0/.
 // Copyright 2013 The Go Authors. All rights reserved.
 // Copyright 2011 The Go Authors. All rights reserved.
 
@@ -3651,6 +3667,7 @@ github.com/envoyproxy/go-control-plane
 -------- Dependency
 github.com/envoyproxy/protoc-gen-validate
 -------- Copyrights
+Copyright 2019 Envoy Project Authors
 -------- Notices
 protoc-gen-validate
 Copyright 2019 Envoy Project Authors
@@ -3789,6 +3806,7 @@ Copyright 2014 Google Inc. All rights reserved.
 github.com/googleapis/gnostic
 -------- Copyrights
 // Copyright 2017 Google Inc. All Rights Reserved.
+Copyright 2017, Google Inc.
 // Copyright 2018 Google Inc. All Rights Reserved.
 	"// Copyright 2017 Google Inc. All Rights Reserved.\n" +
 
@@ -3832,6 +3850,7 @@ github.com/jonboulle/clockwork
 github.com/libopenstorage/openstorage
 -------- Copyrights
    Copyright 2015 Openstorage.org.
+Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
 Copyright 2010 The Go Authors.  All rights reserved.
 // Copyright 2015 The Go Authors.  All rights reserved.
 // Copyright (C) 2014 Andreas Klauer <Andreas.Klauer@metamorpher.de>
@@ -3848,6 +3867,7 @@ github.com/mattbaird/jsonpatch
 -------- Dependency
 github.com/matttproud/golang_protobuf_extensions
 -------- Copyrights
+Copyright 2012 Matt T. Proud (matt.proud@gmail.com)
 // Copyright 2013 Matt T. Proud
 // Copyright 2016 Matt T. Proud
 -------- Notices
@@ -3857,6 +3877,7 @@ Copyright 2012 Matt T. Proud (matt.proud@gmail.com)
 -------- Dependency
 github.com/mesos/mesos-go
 -------- Copyrights
+Copyright 2013-2015, Mesosphere, Inc.
 # Copyright 2010 The Go Authors.  All rights reserved.
 // Copyright 2010 The Go Authors.  All rights reserved.
 // Copyright 2011 The Go Authors.  All rights reserved.
@@ -3904,6 +3925,7 @@ Copyright (c) 2011-2014 - Canonical Inc.
 github.com/mindprince/gonvml
 -------- Copyrights
 # Copyright 2017 Google Inc.
+Copyright 1993-2016 NVIDIA Corporation.  All rights reserved.
 Copyright 2017 Google Inc.
 -------- Notices
 Copyright 1993-2016 NVIDIA Corporation.  All rights reserved.
@@ -3972,6 +3994,7 @@ github.com/oklog/ulid
 github.com/opencontainers/go-digest
 -------- Copyrights
    Copyright 2016 Docker, Inc.
+Copyright © 2016 Docker, Inc. All rights reserved, except as follows. Code is released under the [Apache 2.0 license](LICENSE.code). This `README.md` file and the [`CONTRIBUTING.md`](CONTRIBUTING.md) file are licensed under the Creative Commons Attribution 4.0 International License under the terms and conditions set forth in the file [`LICENSE.docs`](LICENSE.docs). You may obtain a duplicate copy of the same license, titled CC BY-SA 4.0, at http://creativecommons.org/licenses/by-sa/4.0/.
 // Copyright 2017 Docker, Inc.
 
 -------- Dependency
@@ -3979,13 +4002,16 @@ github.com/opencontainers/image-spec
 -------- Copyrights
 // Copyright 2017 The Linux Foundation
    Copyright 2016 The Linux Foundation.
+Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
 // Copyright 2016 The Linux Foundation
 
 -------- Dependency
 github.com/opencontainers/runc
 -------- Copyrights
    Copyright 2014 Docker, Inc.
+Copyright 2012-2015 Docker, Inc.
  * Copyright 2016 SUSE LLC
+Code and documentation copyright 2014 Docker, inc.
  * Copyright 2016, 2017 SUSE LLC
 -------- Notices
 runc
@@ -4011,6 +4037,7 @@ See also http://www.apache.org/dev/crypto.html and/or seek legal counsel.
 github.com/opencontainers/runtime-spec
 -------- Copyrights
    Copyright 2015 The Linux Foundation.
+Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
 
 -------- Dependency
 github.com/opencontainers/selinux
@@ -4038,6 +4065,7 @@ Copyright (c) 2013, Rangel Reale
 Copyright (c) 2014 Simon Eskildsen
 // Copyright 2013 The Go Authors. All rights reserved.
 // Copyright 2011 The Go Authors. All rights reserved.
+Copyright 2012-2013 Lev Shamardin
 // Copyright 2015 CoreOS, Inc.
 // Copyright 2015 The appc Authors
 Copyright (c) 2013 Armon Dadgar
@@ -4060,7 +4088,10 @@ Copyright (c) 2012 Dave Grijalva
 Copyright (c) 2014-2015 The Docker & Go Authors. All rights reserved.
 // Copyright 2012 The Go Authors. All rights reserved.
    Copyright 2015 Docker, Inc.
+Copyright © 2015 Docker, Inc. All rights reserved, except as follows. Code
    Copyright 2014 Docker, Inc.
+Code and documentation copyright 2014 Docker, inc. Code released under the Apache 2.0 license.
+Copyright © 2014-2015 Docker, Inc. All rights reserved, except as follows. Code is released under the Apache 2.0 license. The README.md file, and files in the "docs" folder are licensed under the Creative Commons Attribution 4.0 International License under the terms and conditions set forth in the file "LICENSE.docs". You may obtain a duplicate copy of the same license, titled CC-BY-SA-4.0, at http://creativecommons.org/licenses/by/4.0/.
 Copyright (c) 2014, Elazar Leibovich
 Copyright (c) 2012 Elazar Leibovich. All rights reserved.
 //    // Copyright 2012 The Go Authors. All rights reserved.
@@ -4142,6 +4173,7 @@ Copyright (c) 2013 Dave Cheney. All rights reserved.
 // Copyright 2015 The Prometheus Authors
 // Copyright (c) 2013, The Prometheus Authors
 // Copyright 2013 The Prometheus Authors
+Copyright 2014-2015 The Prometheus Authors
 // Copyright 2014 Prometheus Team
 Copyright 2012-2013 Rackspace, Inc.
 > Copyright © 2011 Russ Ross
@@ -4162,6 +4194,7 @@ Copyright (c) 2012 Alex Ogier. All rights reserved.
 # Copyright 2009 The Go Authors. All rights reserved.
  Copyright (C) 1989, 1991 Free Software Foundation, Inc., <http://fsf.org/>
 Copyright (c) 2015 Xiang Li
+Copyright (C) 2009 Apple Inc. All rights reserved.
 // Copyright 2014 The Go Authors.
 // Copyright 2015 The Go Authors.
 Copyright (c) 2009 The oauth2 Authors. All rights reserved.
@@ -4183,6 +4216,10 @@ Copyright (c) 2006 Kirill Simonov
 Copyright 2014 The Kubernetes Authors All rights reserved.
 Copyright 2015 The Kubernetes Authors All rights reserved.
 # Copyright 2016 The Kubernetes Authors All rights reserved.
+2015-07-10 13:26:38.532  INFO 5 --- [           main] com.hazelcast.system                     : [10.244.77.3]:5701 [someGroup] [3.5] Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+# Copyright 2015 The Kubernetes Authors All rights reserved.
+Copyright (c) 2009-2015 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
 	{"Copyright 2012 Google, Inc. Package foo does bar.", 27, ""},
 Copyright (c) 2012 Péter Surányi. All rights reserved.
    Copyright 2014 Red Hat, Inc.
@@ -4222,6 +4259,8 @@ github.com/pquerna/cachecontrol
 -------- Dependency
 github.com/pquerna/ffjson
 -------- Copyrights
+Copyright (c) 2014, Paul Querna
+part of Go, Copyright (c) 2012 The Go Authors.
  *  Copyright 2015 Paul Querna, Klaus Post
  *  Copyright 2014 Paul Querna
 // Copyright 2009 The Go Authors. All rights reserved.
@@ -4245,6 +4284,10 @@ part of Go, Copyright (c) 2012 The Go Authors.
 github.com/prometheus/client_golang
 -------- Copyrights
 # Copyright 2018 The Prometheus Authors
+Copyright 2012-2015 The Prometheus Authors
+Copyright 2013-2015 Blake Mizerany, Björn Rabenstein
+Copyright 2010 The Go Authors
+Copyright 2013 Matt T. Proud
 // Copyright 2015 The Prometheus Authors
 // Copyright 2017 The Prometheus Authors
 // Copyright 2019 The Prometheus Authors
@@ -4282,6 +4325,7 @@ Licensed under the Apache License, Version 2.0
 github.com/prometheus/client_model
 -------- Copyrights
 # Copyright 2013 Prometheus Team
+Copyright 2012-2015 The Prometheus Authors
 -------- Notices
 Data model artifacts for Prometheus.
 Copyright 2012-2015 The Prometheus Authors
@@ -4294,6 +4338,7 @@ SoundCloud Ltd. (http://soundcloud.com/).
 github.com/prometheus/common
 -------- Copyrights
 # Copyright 2018 The Prometheus Authors
+Copyright 2015 The Prometheus Authors
 // Copyright 2016 The Prometheus Authors
 // Copyright 2015 The Prometheus Authors
 // Copyright 2018 The Prometheus Authors
@@ -4314,6 +4359,7 @@ SoundCloud Ltd. (http://soundcloud.com/).
 github.com/prometheus/procfs
 -------- Copyrights
 # Copyright 2018 The Prometheus Authors
+Copyright 2014-2015 The Prometheus Authors
 // Copyright 2017 The Prometheus Authors
 // Copyright 2018 The Prometheus Authors
 // Copyright 2014 Prometheus Team
@@ -4352,12 +4398,15 @@ github.com/sclevine/spec
 github.com/sergi/go-diff
 -------- Copyrights
 Copyright (c) 2012-2016 The go-diff Authors. All rights reserved.
+> Copyright (c) 2006 Google Inc.
+> Copyright (c) 2012-2016 The go-diff authors. All rights reserved.
 // Copyright (c) 2012-2016 The go-diff authors. All rights reserved.
 // Original library is Copyright (c) 2006 Google Inc.
 
 -------- Dependency
 github.com/soheilhy/cmux
 -------- Copyrights
+Copyright 2016 The CMux Authors. All rights reserved.
 // Copyright 2016 The CMux Authors. All rights reserved.
 
 -------- Dependency
@@ -4440,6 +4489,7 @@ github.com/xanzy/go-cloudstack
 // Copyright 2016, Sander van Harmelen
 // Copyright 2014, Sander van Harmelen
 	pn("// Copyright 2016, Sander van Harmelen")
+# Copyright 2014, Sander van Harmelen
 
 -------- Dependency
 gomodules.xyz/jsonpatch/v2
@@ -4503,6 +4553,7 @@ Copyright (c) 2012 The Go Authors. All rights reserved.
 gopkg.in/yaml.v2
 -------- Copyrights
 Copyright (c) 2006 Kirill Simonov
+Copyright 2011-2016 Canonical Ltd.
 -------- Notices
 Copyright 2011-2016 Canonical Ltd.
 
@@ -4869,6 +4920,7 @@ Copyright ©2013 The gonum Authors. All rights reserved.
 // Copyright ©2014 The gonum Authors. All rights reserved.
 // Copyright ©2015 The gonum Authors. All rights reserved.
 // Copyright 2017 The Go Authors. All rights reserved.
+Copyright 2015 Karl Isenberg
 Copyright (c) 2015-2016 Manfred Touron
 
 -------- Dependency
@@ -5376,6 +5428,7 @@ github.com/gogo/protobuf
 Copyright (c) 2013, The GoGo Authors. All rights reserved.
 Copyright 2010 The Go Authors.  All rights reserved.
 # Copyright (c) 2013, The GoGo Authors. All rights reserved.
+Copyright 2010 The Go Authors.
 // Copyright (c) 2015, The GoGo Authors. All rights reserved.
 # Copyright 2016 The Go Authors.  All rights reserved.
 // Copyright 2016 The Go Authors.  All rights reserved.
@@ -5660,6 +5713,7 @@ Copyright (c) 2009 The Go Authors. All rights reserved.
 // Copyright 2015 The Go Authors. All rights reserved.
 // Copyright 2018 The Go Authors. All rights reserved.
 // Copyright 2016 The Go Authors. All rights reserved.
+Copyright (c) 2016 Bigelow & Holmes Inc.. All rights reserved.
 // Copyright 2017 The Go Authors. All rights reserved.
 // Copyright 2019 The Go Authors. All rights reserved.
 		"// Copyright 2016 The Go Authors. All rights reserved.\n" +
@@ -5751,6 +5805,7 @@ Copyright (c) 2009 The Go Authors. All rights reserved.
 // Copyright 2012 The Go Authors. All rights reserved.
 // Copyright 2013 The Go Authors. All rights reserved.
 // Copyright 2011 The Go Authors. All rights reserved.
+Copyright (C) 2009 Apple Inc. All rights reserved.
 // Copyright 2018 The Go Authors. All rights reserved.
 // Copyright 2019 The Go Authors. All rights reserved.
 -------- Patents
@@ -6250,7 +6305,9 @@ Copyright (c) 2012 The Go Authors. All rights reserved.
 github.com/Microsoft/hcsshim
 -------- Copyrights
 Copyright (c) 2015 Microsoft
+Copyright (c) 2018 Microsoft Corp.  All rights reserved.
    Copyright 2014 Docker, Inc.
+Copyright 2012-2015 Docker, Inc.
 // Copyright 2013 The Go Authors. All rights reserved.
 
 -------- Dependency
@@ -6491,6 +6548,7 @@ Copyright (c) 2013 Kamil Kisiel
 -------- Dependency
 github.com/kisielk/gotool
 -------- Copyrights
+    Copyright (c) 2009 The Go Authors. All rights reserved.
 Copyright (c) 2013 Kamil Kisiel <kamil@kamilkisiel.net>
 // Copyright 2012 The Go Authors. All rights reserved.
 // Copyright 2017 The Go Authors. All rights reserved.
@@ -6501,10 +6559,12 @@ Copyright (c) 2013 Kamil Kisiel <kamil@kamilkisiel.net>
 github.com/konsorten/go-windows-terminal-sequences
 -------- Copyrights
 Copyright (c) 2017 marvin + konsorten GmbH (open-source@konsorten.de)
+Copyright (c) 2018 marvin + konsorten GmbH (open-source@konsorten.de)
 
 -------- Dependency
 github.com/kr/logfmt
 -------- Copyrights
+Copyright (C) 2013 Keith Rarick, Blake Mizerany
 // Copyright 2010 The Go Authors. All rights reserved.
 
 -------- Dependency
@@ -6673,6 +6733,7 @@ Copyright (c) 2015 Sergio Rubio
 github.com/satori/go.uuid
 -------- Copyrights
 Copyright (C) 2013-2018 by Maxim Bublis <b@codemonkey.ru>
+Copyright (C) 2013-2018 by Maxim Bublis <b@codemonkey.ru>.
 // Copyright (C) 2013-2018 by Maxim Bublis <b@codemonkey.ru>
 
 -------- Dependency
@@ -6699,6 +6760,8 @@ Copyright (c) 2016 SmartyStreets, LLC
 github.com/smartystreets/goconvey
 -------- Copyrights
 Copyright (c) 2016 SmartyStreets, LLC
+Copyright (c) 2009, Matt McInerney (matt@pixelspread.com),
+Copyright (c) 2011-2012, Vernon Adams (vern@newtypography.co.uk), with Reserved Font Names 'Oswald'
 
 -------- Dependency
 github.com/spf13/cast
@@ -6836,6 +6899,7 @@ copyright staring in 2011 when the project was ported over:
 Copyright (c) 2006-2010 Kirill Simonov
 Copyright (c) 2006-2011 Kirill Simonov
 Copyright (c) 2011-2019 Canonical Ltd
+Copyright 2011-2016 Canonical Ltd.
 // Copyright (c) 2011-2019 Canonical Ltd
 // Copyright (c) 2006-2010 Kirill Simonov
 -------- Notices
@@ -6858,6 +6922,8 @@ limitations under the License.
 honnef.co/go/tools
 -------- Copyrights
 Copyright (c) 2016 Dominik Honnef
+> Copyright (c) 2016 Dominik Honnef
+> Copyright (c) 2013 The Go Authors. All rights reserved.
 // Copyright 2013 The Go Authors. All rights reserved.
 // Copyright 2014 The Go Authors. All rights reserved.
 Copyright (c) 2009 The Go Authors. All rights reserved.
