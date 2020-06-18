@@ -68,6 +68,11 @@ pipeline {
                     make thirdparty-check
                 """
             }
+            post {
+                always {
+                    archiveArtifacts artifacts: '**/go.mod,**/go.sum', allowEmptyArchive: true
+                }
+            }
         }
 
         stage('Unit Tests') {
