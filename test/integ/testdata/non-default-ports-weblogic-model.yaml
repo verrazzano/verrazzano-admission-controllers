@@ -1,0 +1,33 @@
+# Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: non-default-ports-weblogic-model
+  namespace: default
+spec:
+  description: "Model with non-default t3Port and adminPort"
+  weblogicDomains:
+    - name: "weblogic-domain"
+      t3Port: 7070
+      adminPort: 2020
+      domainCRValues:
+        imagePullSecrets: []
+        clusters:
+          - clusterName: cluster-1
+        image: weblogic-domain:1.0
+        logHome: /u01/oracle/user_projects/domains/weblogic-domain/logs
+        webLogicCredentialsSecret:
+          name: domain-credentials
+    - name: "weblogic-domain-2"
+      t3Port: 1010
+      adminPort: 2020
+      domainCRValues:
+        imagePullSecrets: []
+        clusters:
+          - clusterName: cluster-1
+        image: weblogic-domain:1.0
+        logHome: /u01/oracle/user_projects/domains/weblogic-domain/logs
+        webLogicCredentialsSecret:
+          name: domain-credentials

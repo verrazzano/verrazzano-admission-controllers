@@ -1,0 +1,18 @@
+# Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: invalid-conn-rest-env-helidon-model
+  namespace: default
+spec:
+  description: "Model with name: invalid-conn-rest-env-helidon-model (same var for port and host)"
+  helidonApplications:
+    - name: "helidon-application"
+      image: "helidon-application:1.0"
+      connections:
+        - rest:
+          - target: "test"
+            environmentVariableForHost: "MY_HOST"
+            environmentVariableForPort: "MY_HOST"

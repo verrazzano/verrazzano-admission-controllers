@@ -1,0 +1,35 @@
+# Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoBinding
+metadata:
+  name: min-binding
+  namespace: default
+spec:
+  description: "Minimum binding"
+  modelName: min-model
+  helidonBindings:
+    - name: "min-helidon-application"
+      replicas: 2
+  coherenceBindings:
+    # Component name "bobbys1-coherence" is not present in min-model model
+    - name: "bobbys1-coherence"
+      replicas: 3
+    # Duplicate occurrence of component name "min-helidon-application"
+    - name: "min-helidon-application"
+      replicas: 2
+  weblogicBindings:
+    # Duplicate occurrence of component name "min-helidon-application"
+    - name: "min-helidon-application"
+      replicas: 2
+  placement:
+    - name: local
+      namespaces:
+        - name: ns1
+          components:
+            - name: min-helidon-application
+            # Component name "bobbys2-coherence" is not present in the min-model model
+            - name: bobbys2-coherence
+            # Duplicate occurrence of component name "min-helidon-application"
+            - name: min-helidon-application

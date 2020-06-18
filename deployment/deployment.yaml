@@ -1,0 +1,116 @@
+# Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: verrazzano-validation
+  namespace: verrazzano-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: verrazzano-validation
+rules:
+  - apiGroups:
+      - verrazzano.io
+    resources:
+      - verrazzanobindings
+      - verrazzanomanagedclusters
+      - verrazzanomodels
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - secrets
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: verrazzano-validation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: verrazzano-validation
+subjects:
+  - kind: ServiceAccount
+    name: verrazzano-validation
+    namespace: verrazzano-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: verrazzano-validation
+  namespace: verrazzano-system
+  labels:
+    name: verrazzano-validation
+spec:
+  ports:
+    - name: webhook
+      port: 443
+      targetPort: 8080
+  selector:
+    name: verrazzano-validation
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: verrazzano-admission-controller
+  namespace: verrazzano-system
+  labels:
+    name: verrazzano-validation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: verrazzano-validation
+  template:
+    metadata:
+      name: verrazzano-admission-controller
+      labels:
+        name: verrazzano-validation
+    spec:
+      containers:
+        - name: webhook
+          image: IMAGE_NAME:IMAGE_TAG
+          imagePullPolicy: Never
+          args:
+            - --v=4
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /etc/certs
+              readOnly: true
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: verrazzano-validation
+      serviceAccount: verrazzano-validation
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: verrazzano-validation
+webhooks:
+  - name: verrazzano-validation.oracle.com
+    clientConfig:
+      service:
+        name: verrazzano-validation
+        namespace: verrazzano-system
+        path: "/validate"
+      caBundle: CA_BUNDLE
+    rules:
+      - resources: ["verrazzanobindings"]
+        apiGroups: ["verrazzano.io"]
+        apiVersions: ["v1beta1"]
+        operations: ["CREATE","UPDATE"]
+      - resources: ["verrazzanomodels"]
+        apiGroups: ["verrazzano.io"]
+        apiVersions: ["v1beta1"]
+        operations: ["CREATE","UPDATE","DELETE"]
+    sideEffects: None
+    failurePolicy: Fail

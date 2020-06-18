@@ -1,0 +1,21 @@
+# Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: invalid-conn-rest-env-coherence-model
+  namespace: default
+spec:
+  description: "Model with invalid rest connection environment variables (invalid character in host)"
+  coherenceClusters:
+    - name: "coherence-application"
+      image: "coherence-application:1.0"
+      cacheConfig: "cache-config.xml"
+      pofConfig: "pof-config.xml"
+      connections:
+        - rest:
+            - target: "test"
+              environmentVariableForHost: "TEST_HOST$"
+              environmentVariableForPort: "TEST_PORT"
+

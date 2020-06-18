@@ -1,0 +1,10 @@
+build/_output
+build/admission-controller-cert
+build/deploy
+vendor
+.idea
+**/*.iml
+coverage.cov
+coverage.html
+*-test-result.xml
+**/.DS_Store

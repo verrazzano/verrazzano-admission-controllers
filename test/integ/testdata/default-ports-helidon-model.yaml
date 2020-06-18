@@ -1,0 +1,17 @@
+# Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: default-ports-helidon-model
+  namespace: default
+spec:
+  description: "Model with name: default-ports-helidon-model. Use defaults for port and targetPort (zero is considered default)"
+  helidonApplications:
+    - name: "helidon-application"
+      image: "helidon-application:1.0"
+    - name: "helidon-application2"
+      image: "helidon-application:2.0"
+      port: 0
+
