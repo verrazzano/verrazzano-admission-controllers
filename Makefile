@@ -139,8 +139,3 @@ endif
 .PHONY: delete-cluster
 delete-cluster:
 	kind delete cluster --name ${CLUSTER_NAME}
-
-.PHONY: docker-push
-docker-push: build
-	docker push ${DOCKER_IMAGE_FULLNAME}:${DOCKER_IMAGE_TAG}
-
