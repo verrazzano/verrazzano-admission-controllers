@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+// Copyright (C) 2020, Oracle and/or its affiliates.
 // Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
 
 package pkg
@@ -6,10 +6,10 @@ package pkg
 import (
 	"context"
 	"fmt"
-
 	s "strings"
+	"os"
+	"github.com/rs/zerolog"
 
-	"github.com/golang/glog"
 	v1beta1v8o "github.com/verrazzano/verrazzano-crd-generator/pkg/apis/verrazzano/v1beta1"
 	"k8s.io/api/admission/v1beta1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -19,6 +19,9 @@ import (
 
 // Validate binding
 func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) v1beta1.AdmissionReview {
+	// create initial logger with predefined elements
+	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "VerrazzanoBinding").Str("name", binding.Name).Logger()
+
 	// Don't allow create if the binding refers to a non-existing model
 	modelList, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil && modelList != nil {
@@ -31,7 +34,7 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 		}
 		if !modelFound {
 			message := fmt.Sprintf("binding is referencing model %s that does not exist in namespace %s", binding.Spec.ModelName, arRequest.Request.Namespace)
-			glog.Error(message)
+			logger.Error().Msg(message)
 			return errorAdmissionReview(message)
 		}
 	}
@@ -60,13 +63,17 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 		return errorAdmissionReview(response)
 	}
 
-	glog.Info("validation of binding successful")
+	logger.Info().Msg("validation of binding successful")
 	return v1beta1.AdmissionReview{}
 }
 
 // Validate componets in the binding
 func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) []string {
+	// create initial logger with predefined elements
+	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "VerrazzanoBinding").Str("name", binding.Name).Logger()
+
 	var errMessages []string
+
 	// Get all components referenced in the binding
 	componentsInBindingSet := make(map[string]bool)
 
@@ -75,21 +82,28 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 		if !componentsInBindingSet[coherenceBinding.Name] {
 			componentsInBindingSet[coherenceBinding.Name] = true
 		} else {
-			errMessages = append(errMessages, fmt.Sprintf("Multiple occurrence of component for Coherence binding. Invalid Component: [%s]\n", coherenceBinding.Name))
+			msg := fmt.Sprintf("Multiple occurrence of component for Coherence binding. Invalid Component: [%s]\n", coherenceBinding.Name)
+			errMessages = append(errMessages, msg)
+			logger.Error().Msg(msg)
 		}
 	}
 	for _, helidonBinding := range binding.Spec.HelidonBindings {
 		if !componentsInBindingSet[helidonBinding.Name] {
 			componentsInBindingSet[helidonBinding.Name] = true
 		} else {
-			errMessages = append(errMessages, fmt.Sprintf("Multiple occurrence of component for Helidon binding. Invalid Component: [%s]\n", helidonBinding.Name))
+			msg := fmt.Sprintf("Multiple occurrence of component for Helidon binding. Invalid Component: [%s]\n", helidonBinding.Name)
+			errMessages = append(errMessages, msg)
+			logger.Error().Msg(msg)
 		}
+
 	}
 	for _, weblogicBinding := range binding.Spec.WeblogicBindings {
 		if !componentsInBindingSet[weblogicBinding.Name] {
 			componentsInBindingSet[weblogicBinding.Name] = true
 		} else {
-			errMessages = append(errMessages, fmt.Sprintf("Multiple occurrence of component for Weblogic binding. Invalid Component: [%s]\n", weblogicBinding.Name))
+			msg := fmt.Sprintf("Multiple occurrence of component for Weblogic binding. Invalid Component: [%s]\n", weblogicBinding.Name)
+			errMessages = append(errMessages, msg)
+			logger.Error().Msg(msg)
 		}
 	}
 
@@ -112,7 +126,9 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 	// Each componentsInBindingSet component must be present in componentsInModel
 	for bindingComponent := range componentsInBindingSet {
 		if !componentsInModel[bindingComponent] {
-			errMessages = append(errMessages, fmt.Sprintf("Component in bindings does not exist in model definition. Invalid Component: [%s]\n", bindingComponent))
+			msg := fmt.Sprintf("Component in bindings does not exist in model definition. Invalid Component: [%s]\n", bindingComponent)
+			errMessages = append(errMessages, msg)
+			logger.Error().Msg(msg)
 		}
 	}
 
@@ -125,7 +141,9 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 				if !componentsInPlacementNamespacesSet[component.Name] {
 					componentsInPlacementNamespacesSet[component.Name] = true
 				} else {
-					errMessages = append(errMessages, fmt.Sprintf("Multiple occurrence of component across placement namespaces. Invalid Component: [%s]\n", component.Name))
+					msg := fmt.Sprintf("Multiple occurrence of component across placement namespaces. Invalid Component: [%s]\n", component.Name)
+					errMessages = append(errMessages, msg)
+					logger.Error().Msg(msg)
 				}
 			}
 		}
@@ -134,13 +152,12 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 	// Each componentsInPlacementNamespacesSet component must be present in componentsInModel
 	for component := range componentsInPlacementNamespacesSet {
 		if !componentsInModel[component] {
-			errMessages = append(errMessages, fmt.Sprintf("Component in placement namespace does not exist in model definition. Invalid Component: [%s]\n", component))
+			msg := fmt.Sprintf("Component in placement namespace does not exist in model definition. Invalid Component: [%s]\n", component)
+			errMessages = append(errMessages, msg)
+			logger.Error().Msg(msg)
 		}
 	}
 
-	if len(errMessages) > 0 {
-		glog.Error(s.Join(errMessages, ", "))
-	}
 	return errMessages
 }
 
@@ -148,6 +165,9 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBinding) []string {
 	var errMessages []string
 	for _, ingressBinding := range ingressBindings {
+		// create initial logger with predefined elements
+		logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "VerrazzanoBinding").Str("name", ingressBinding.Name).Logger()
+
 		// validate ingressBinding > dnsName
 		dnsName := s.TrimSpace(ingressBinding.DnsName)
 		errFound := false
@@ -160,11 +180,13 @@ func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBindin
 		if s.HasPrefix(dnsName, "*.") {
 			for _, msg := range k8sValidations.IsWildcardDNS1123Subdomain(dnsName) {
 				errMessages = append(errMessages, msg)
+				logger.Error().Msg(msg)
 				errFound = true
 			}
 		} else {
 			for _, msg := range k8sValidations.IsDNS1123Subdomain(dnsName) {
 				errMessages = append(errMessages, msg)
+				logger.Error().Msg(msg)
 				errFound = true
 			}
 		}
@@ -176,6 +198,7 @@ func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBindin
 				label := labels[i]
 				for _, msg := range k8sValidations.IsDNS1123Label(label) {
 					errMessages = append(errMessages, msg)
+					logger.Error().Msg(msg)
 					errFound = true
 				}
 			}
@@ -183,7 +206,6 @@ func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBindin
 
 		if errFound {
 			errMessages = append(errMessages, fmt.Sprintf("Invalid DNS name: [%s]\n", dnsName))
-			glog.Error(s.Join(errMessages, ", "))
 		}
 	}
 	return errMessages
@@ -191,6 +213,9 @@ func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBindin
 
 // Validate that each placement name has a matching VerrazzanoManagedClusters custom resource
 func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) string {
+	// create initial logger with predefined elements
+	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "VerrazzanoBinding").Str("name", binding.Name).Logger()
+
 	var missingClusters = ""
 	for _, placement := range binding.Spec.Placement {
 		_, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoManagedClusters(arRequest.Request.Namespace).Get(context.TODO(), placement.Name, metav1.GetOptions{})
@@ -201,7 +226,7 @@ func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verr
 			missingClusters += placement.Name
 		} else if err != nil {
 			message := fmt.Sprintf("failed to get referenced cluster %s in namespace %s: %v", placement.Name, arRequest.Request.Namespace, err)
-			glog.Error(message)
+			logger.Error().Msg(message)
 			return message
 		}
 	}
@@ -209,7 +234,7 @@ func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verr
 	var message = ""
 	if missingClusters != "" {
 		message = fmt.Sprintf("binding references cluster(s) \"%s\" that do not exist in namespace %s", missingClusters, arRequest.Request.Namespace)
-		glog.Error(message)
+		logger.Error().Msg(message)
 	}
 
 	return message
@@ -217,7 +242,10 @@ func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verr
 
 // Validate that each secret in the binding has a matching secret in the default namespace
 func validateBindingSecrets(binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) string {
-	glog.V(6).Info("In validateBindingSecrets code")
+	// create logger for validating binding secrets
+	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "VerrazzanoBinding").Str("name", binding.Name).Logger()
+
+	logger.Debug().Msg("In validateBindingSecrets code")
 
 	// Check database credentials
 	for _, dbBinding := range binding.Spec.DatabaseBindings {
@@ -232,17 +260,20 @@ func validateBindingSecrets(binding v1beta1v8o.VerrazzanoBinding, clientsets *Cl
 
 // Get a secret and check for errors
 func getBindingSecrets(clientsets *Clientsets, secretName string, secretType string, compName string) string {
-	glog.V(6).Info("In getBindingSecrets code")
+	// create logger for validating binding secrets
+	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "BindingSecret").Str("name", secretName).Logger()
+
+	logger.Debug().Msg("In getBindingSecrets code")
 
 	_, err := clientsets.K8sClientset.CoreV1().Secrets("default").Get(context.TODO(), secretName, metav1.GetOptions{})
 	if k8sErrors.IsNotFound(err) {
 		message := fmt.Sprintf("binding references %s \"%s\" for %s.  This secret must be created in the default namespace before proceeding.", secretType, secretName, compName)
-		glog.Error(message)
+		logger.Error().Msg(message)
 		return message
 	}
 	if err != nil {
 		message := fmt.Sprintf("failed to get referenced secret %s in namespace default: %v", secretName, err)
-		glog.Error(message)
+		logger.Error().Msg(message)
 		return message
 	}
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+# Copyright (C) 2020, Oracle and/or its affiliates.
 # Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
 
 set -e
@@ -22,6 +22,8 @@ test -e ${PROJECT_DIR}/THIRD_PARTY_LICENSES.txt
 GOMOD_SUM=$(md5sum go.mod | awk '{print $1}')
 THIRDPARTY_LICENSE_SUM=$(tail -1 ${PROJECT_DIR}/THIRD_PARTY_LICENSES.txt)
 EXPECTED_THIRD_PARTY_LICENSE_SUM="License file based on go.mod with md5 sum: ${GOMOD_SUM}"
+
+echo "Computed md5 Sum: " ${GOMOD_SUM}
 
 if [ "${THIRDPARTY_LICENSE_SUM}" != "${EXPECTED_THIRD_PARTY_LICENSE_SUM}" ] ; then
     echo "Third party license file ends with '${THIRDPARTY_LICENSE_SUM}' expected '${EXPECTED_THIRD_PARTY_LICENSE_SUM}'"

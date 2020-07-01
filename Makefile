@@ -1,4 +1,4 @@
-# Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+# Copyright (C) 2020, Oracle and/or its affiliates.
 # Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
 
 NAME:=verrazzano-admission-controller
@@ -81,7 +81,7 @@ push-tag:
 #
 .PHONY: unit-test
 unit-test: go-install
-	go test -v ./pkg/apis/... ./pkg/controler/... ./cmd/...
+	go test -v ./pkg/
 
 .PHONY: coverage
 coverage:
