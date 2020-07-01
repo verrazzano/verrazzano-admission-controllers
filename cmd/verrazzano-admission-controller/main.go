@@ -8,12 +8,12 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"github.com/rs/zerolog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/golang/glog"
 	"github.com/verrazzano/verrazzano-admission-controllers/pkg"
 )
 
@@ -36,11 +36,14 @@ func main() {
 	flag.Parse()
 	InitLogs()
 
-	glog.V(4).Infof("Starting Verrazzano validation admission controller")
+	// create initial logger with predefined elements
+	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "AdmissionController").Str("name", "AdmissionInit").Logger()
+
+	logger.Info().Msg("Starting Verrazzano validation admission controller")
 
 	certs, err := tls.LoadX509KeyPair(tlscert, tlskey)
 	if err != nil {
-		glog.Errorf("Failed to load key pair: %v", err)
+		logger.Error().Msgf("Failed to load key pair: %v", err)
 	}
 
 	// define http server and server handler
@@ -58,17 +61,17 @@ func main() {
 	// start webhook server
 	go func() {
 		if err := server.ListenAndServeTLS("", ""); err != nil {
-			glog.Errorf("Failed to listen and serve webhook server: %v", err)
+			logger.Error().Msgf("Failed to listen and serve webhook server: %v", err)
 		}
 	}()
 
-	glog.Infof("Server running listening in port: %s", port)
+	logger.Info().Msgf("Server running listening in port: %s", port)
 
 	// listen for shutdown signal
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	<-signalChan
 
-	glog.Info("Got shutdown signal, shutting down webhook server gracefully...")
+	logger.Info().Msg("Got shutdown signal, shutting down webhook server gracefully...")
 	server.Shutdown(context.Background())
 }
