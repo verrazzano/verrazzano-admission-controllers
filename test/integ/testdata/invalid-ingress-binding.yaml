@@ -19,28 +19,21 @@ spec:
     - name: "local-ingress1"
       # label with uppercase chars
       dnsName: "someInvalidDNSName.."
-      port: 80
     - name: "local-ingress6"
       # a valid DNS name
       dnsName: "www.google.com"
-      port: 80
     - name: "local-ingress2"
       # label starts with special char (only letter or digit are valid start chars)
       dnsName: "-1223ddd.ddd.dd"
-      port: 8080
     - name: "local-ingress3"
       # label length greater than 63 chars
       dnsName: "a1234567890a1234567890a1234567890a1234567890a1234567890a1234567890"
-      port: 8081
     - name: "local-ingress4"
       # FQDN with more than 253 chars
       dnsName: "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcde.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.dcom"
-      port: 8080
     - name: "local-ingress5"
       # label with 0 length
       dnsName: "myname.."
-      port: 80
     - name: "local-ingress5"
       # a valid DNS name
       dnsName: "www.oracle.com"
-      port: 80

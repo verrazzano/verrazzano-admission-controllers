@@ -5,6 +5,7 @@ package integ_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -35,7 +36,7 @@ var _ = AfterSuite(func() {
 
 var _ = Describe("Verrazzano admission controller", func() {
 	It("is deployed", func() {
-		deployment, err := getClientSet().AppsV1().Deployments("verrazzano-system").Get("verrazzano-admission-controller", metav1.GetOptions{})
+		deployment, err := getClientSet().AppsV1().Deployments("verrazzano-system").Get(context.Background(), "verrazzano-admission-controller", metav1.GetOptions{})
 		Expect(err).To(BeNil(), "Should not have received an error when trying to get the verrazzano-admission-controller deployment")
 		Expect(deployment.Spec.Template.Spec.Containers[0].Name).To(Equal("webhook"),
 			"Should have a container with the name webhook")
@@ -52,42 +53,42 @@ var _ = Describe("Verrazzano admission controller", func() {
 
 var _ = Describe("Verrazzano secret for admission controller", func() {
 	It("is deployed", func() {
-		_, err := getClientSet().CoreV1().Secrets("verrazzano-system").Get(verrazzanoValidation, metav1.GetOptions{})
+		_, err := getClientSet().CoreV1().Secrets("verrazzano-system").Get(context.Background(), verrazzanoValidation, metav1.GetOptions{})
 		Expect(err).To(BeNil(), fmt.Sprintf("Should not have received an error when trying to get the %s secret", verrazzanoValidation))
 	})
 })
 
 var _ = Describe("Verrazzano validatingWebhookConfiguration", func() {
 	It("is deployed", func() {
-		_, err := getClientSet().AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(verrazzanoValidation, metav1.GetOptions{})
+		_, err := getClientSet().AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(context.Background(), verrazzanoValidation, metav1.GetOptions{})
 		Expect(err).To(BeNil(), fmt.Sprintf("Should not have received an error when trying to get the %s validatingWebhookConfiguration", verrazzanoValidation))
 	})
 })
 
 var _ = Describe("Verrazzano service account for admission controller", func() {
 	It("is deployed", func() {
-		_, err := getClientSet().CoreV1().ServiceAccounts("verrazzano-system").Get(verrazzanoValidation, metav1.GetOptions{})
+		_, err := getClientSet().CoreV1().ServiceAccounts("verrazzano-system").Get(context.Background(), verrazzanoValidation, metav1.GetOptions{})
 		Expect(err).To(BeNil(), fmt.Sprintf("Should not have received an error when trying to get the %s service account", verrazzanoValidation))
 	})
 })
 
 var _ = Describe("Verrazzano service for admission controller", func() {
 	It("is deployed", func() {
-		_, err := getClientSet().CoreV1().Services("verrazzano-system").Get(verrazzanoValidation, metav1.GetOptions{})
+		_, err := getClientSet().CoreV1().Services("verrazzano-system").Get(context.Background(), verrazzanoValidation, metav1.GetOptions{})
 		Expect(err).To(BeNil(), fmt.Sprintf("Should not have received an error when trying to get the %s service", verrazzanoValidation))
 	})
 })
 
 var _ = Describe("Verrazzano cluster roles for admission controller", func() {
 	It("is deployed", func() {
-		_, err := getClientSet().RbacV1().ClusterRoles().Get(verrazzanoValidation, metav1.GetOptions{})
+		_, err := getClientSet().RbacV1().ClusterRoles().Get(context.Background(), verrazzanoValidation, metav1.GetOptions{})
 		Expect(err).To(BeNil(), fmt.Sprintf("Should not have received an error when trying to get the %s cluster roles", verrazzanoValidation))
 	})
 })
 
 var _ = Describe("Verrazzano cluster roles binding for admission controller", func() {
 	It("is deployed", func() {
-		_, err := getClientSet().RbacV1().ClusterRoleBindings().Get(verrazzanoValidation, metav1.GetOptions{})
+		_, err := getClientSet().RbacV1().ClusterRoleBindings().Get(context.Background(), verrazzanoValidation, metav1.GetOptions{})
 		Expect(err).To(BeNil(), fmt.Sprintf("Should not have received an error when trying to get the %s cluster roles binding", verrazzanoValidation))
 	})
 })
@@ -265,7 +266,7 @@ var _ = Describe("Apply model", func() {
 
 var _ = Describe("Apply model", func() {
 	It("Helidon with invalid ports", func() {
-		_ , stderr := runCommand("kubectl apply -f testdata/invalid-ports-helidon-model.yaml")
+		_, stderr := runCommand("kubectl apply -f testdata/invalid-ports-helidon-model.yaml")
 		Expect(stderr).To(ContainSubstring("cannot unmarshal number -1 into Go struct field VerrazzanoHelidon.spec.helidonApplications.targetPort of type uint"))
 	})
 	It("WebLogic with invalid ports", func() {
@@ -278,7 +279,7 @@ var _ = Describe("Apply model", func() {
 		Expect(stderr).To(Equal(""))
 	})
 	It("Helidon with non-default ports", func() {
-		_ , stderr := runCommand("kubectl apply -f testdata/non-default-ports-helidon-model.yaml")
+		_, stderr := runCommand("kubectl apply -f testdata/non-default-ports-helidon-model.yaml")
 		Expect(stderr).To(Equal(""))
 	})
 	It("WebLogic with non-default ports", func() {
@@ -290,7 +291,7 @@ var _ = Describe("Apply model", func() {
 		Expect(stderr).To(Equal(""))
 	})
 	It("Helidon with default ports", func() {
-		_ , stderr := runCommand("kubectl apply -f testdata/default-ports-helidon-model.yaml")
+		_, stderr := runCommand("kubectl apply -f testdata/default-ports-helidon-model.yaml")
 		Expect(stderr).To(Equal(""))
 	})
 	It("WebLogic with default ports", func() {
@@ -358,7 +359,7 @@ func homeDir() string {
 func isPodRunning(name string, namespace string) bool {
 	GinkgoWriter.Write([]byte("[DEBUG] checking if there is a running pod named " + name + "* in namespace " + namespace + "\n"))
 	clientset := getClientSet()
-	pods, err := clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	pods, err := clientset.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		Fail("Could not get list of pods")
 	}
@@ -391,7 +392,7 @@ func doesCRDExist(crdName string) bool {
 		Fail("Could not get apix client")
 	}
 
-	crds, err := apixClient.CustomResourceDefinitions().List(metav1.ListOptions{})
+	crds, err := apixClient.CustomResourceDefinitions().List(context.Background(), metav1.ListOptions{})
 
 	for i := range crds.Items {
 		if strings.Compare(crds.Items[i].ObjectMeta.Name, crdName) == 0 {

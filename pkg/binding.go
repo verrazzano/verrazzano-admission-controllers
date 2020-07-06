@@ -4,7 +4,10 @@
 package pkg
 
 import (
+	"context"
 	"fmt"
+
+	s "strings"
 
 	"github.com/golang/glog"
 	v1beta1v8o "github.com/verrazzano/verrazzano-crd-generator/pkg/apis/verrazzano/v1beta1"
@@ -12,13 +15,12 @@ import (
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sValidations "k8s.io/apimachinery/pkg/util/validation"
-	s "strings"
 )
 
 // Validate binding
 func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) v1beta1.AdmissionReview {
 	// Don't allow create if the binding refers to a non-existing model
-	modelList, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).List(metav1.ListOptions{})
+	modelList, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil && modelList != nil {
 		modelFound := false
 		for _, model := range modelList.Items {
@@ -87,7 +89,7 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 
 	// Get model referenced in the binding
 	modelName := binding.Spec.ModelName
-	model, _ := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).Get(modelName, metav1.GetOptions{})
+	model, _ := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).Get(context.TODO(), modelName, metav1.GetOptions{})
 
 	// Get all components referenced in the model
 	componentsInModel := make(map[string]bool)
@@ -185,7 +187,7 @@ func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBindin
 func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) string {
 	var missingClusters = ""
 	for _, placement := range binding.Spec.Placement {
-		_, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoManagedClusters(arRequest.Request.Namespace).Get(placement.Name, metav1.GetOptions{})
+		_, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoManagedClusters(arRequest.Request.Namespace).Get(context.TODO(), placement.Name, metav1.GetOptions{})
 		if k8sErrors.IsNotFound(err) {
 			if missingClusters != "" {
 				missingClusters += ","

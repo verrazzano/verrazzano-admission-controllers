@@ -4,6 +4,7 @@
 package pkg
 
 import (
+	"context"
 	"fmt"
 	s "strings"
 
@@ -49,7 +50,7 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 	// Delete is being called for namespaces (for some unknown reason) when there is single cluster.  In this case,
 	// there is no resource name so just return and don't generate an error.
 	if len(arRequest.Request.Name) == 0 {
-		_, err := clientsets.K8sClientset.CoreV1().Namespaces().Get(arRequest.Request.Namespace, metav1.GetOptions{})
+		_, err := clientsets.K8sClientset.CoreV1().Namespaces().Get(context.TODO(), arRequest.Request.Namespace, metav1.GetOptions{})
 		if err == nil {
 			glog.Info("delete of namespace was requested, no model to delete")
 			return v1beta1.AdmissionReview{}
@@ -57,7 +58,7 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 	}
 
 	// Get the model we want to delete
-	model, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).Get(arRequest.Request.Name, metav1.GetOptions{})
+	model, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).Get(context.TODO(), arRequest.Request.Name, metav1.GetOptions{})
 
 	// Delete is called for resources that don't exist. If that is the case, then just return
 	if k8sErrors.IsNotFound(err) {
@@ -74,7 +75,7 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 
 	// Don't allow delete if a deployed binding references this model
 	if model != nil {
-		bindingList, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoBindings(arRequest.Request.Namespace).List(metav1.ListOptions{})
+		bindingList, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoBindings(arRequest.Request.Namespace).List(context.TODO(), metav1.ListOptions{})
 		if err == nil && bindingList != nil {
 			for _, binding := range bindingList.Items {
 				if binding.Spec.ModelName == model.Name {
@@ -150,7 +151,7 @@ func validateSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) s
 func getSecret(clientsets *Clientsets, secretName string, secretType string, compName string) string {
 	glog.V(6).Info("In getSecret code")
 
-	_, err := clientsets.K8sClientset.CoreV1().Secrets("default").Get(secretName, metav1.GetOptions{})
+	_, err := clientsets.K8sClientset.CoreV1().Secrets("default").Get(context.TODO(), secretName, metav1.GetOptions{})
 	if k8sErrors.IsNotFound(err) {
 		message := fmt.Sprintf("model references %s \"%s\" for component %s.  This secret must be created in the default namespace before proceeding.", secretType, secretName, compName)
 		glog.Error(message)
