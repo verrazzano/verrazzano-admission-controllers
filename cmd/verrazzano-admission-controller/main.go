@@ -38,6 +38,9 @@ func main() {
 	flag.Parse()
 	InitLogs()
 
+	// create initial logger with predefined elements
+	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "AdmissionController").Str("name", "AdmissionInit").Logger()
+
 	logger.Info().Msg("Starting Verrazzano validation admission controller")
 
 	certs, err := tls.LoadX509KeyPair(tlscert, tlskey)
