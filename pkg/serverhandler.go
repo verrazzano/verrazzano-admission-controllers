@@ -92,7 +92,7 @@ func (sh *ServerHandler) Serve(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 				glog.Infof("processing model name: %s:%s", model.Namespace, model.Name)
-				arResponse = validateModel(arRequest, model, clientsets)
+				arResponse = validateModel(model, clientsets)
 			} else {
 				glog.Infof("processing model name: %s:%s", arRequest.Request.Namespace, arRequest.Request.Name)
 				arResponse = deleteModel(arRequest, clientsets)

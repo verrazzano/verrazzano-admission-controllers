@@ -234,6 +234,21 @@ var _ = Describe("Apply model", func() {
 	})
 })
 
+var _ = Describe("Apply binding", func() {
+	It("with missing databaseBinding credentials", func() {
+		_, stderr := runCommand("kubectl create secret generic found-credentials --from-literal=username=user-id --from-literal=password=welcome")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl apply -f testdata/min-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl apply -f testdata/missing-database-credentials-secret-binding.yaml")
+		Expect(stderr).To(ContainSubstring("binding references databaseBindings.credentials \"missing-credentials\" for mysql2.  This secret must be created in the default namespace before proceeding."))
+		_, stderr = runCommand("kubectl delete secret found-credentials")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete -f testdata/min-model.yaml")
+		Expect(stderr).To(Equal(""))
+	})
+})
+
 var _ = Describe("Apply model", func() {
 	It("with invalid environmentVariableForHost in rest connection", func() {
 		_, stderr := runCommand("kubectl apply -f testdata/invalid-conn-rest-env-vars-coherence-model.yaml")
@@ -281,11 +296,15 @@ var _ = Describe("Apply model", func() {
 	It("Helidon with non-default ports", func() {
 		_, stderr := runCommand("kubectl apply -f testdata/non-default-ports-helidon-model.yaml")
 		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete -f testdata/non-default-ports-helidon-model.yaml")
+		Expect(stderr).To(Equal(""))
 	})
 	It("WebLogic with non-default ports", func() {
 		_, stderr := runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=welcome")
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/non-default-ports-weblogic-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete -f testdata/non-default-ports-weblogic-model.yaml")
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl delete secret domain-credentials")
 		Expect(stderr).To(Equal(""))
@@ -293,11 +312,15 @@ var _ = Describe("Apply model", func() {
 	It("Helidon with default ports", func() {
 		_, stderr := runCommand("kubectl apply -f testdata/default-ports-helidon-model.yaml")
 		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete -f testdata/default-ports-helidon-model.yaml")
+		Expect(stderr).To(Equal(""))
 	})
 	It("WebLogic with default ports", func() {
 		_, stderr := runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=welcome")
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/default-ports-weblogic-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete -f testdata/default-ports-weblogic-model.yaml")
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl delete secret domain-credentials")
 		Expect(stderr).To(Equal(""))
@@ -441,9 +464,6 @@ func runCommand(commandLine string) (string, string) {
 	wg.Wait()
 
 	cmd.Wait()
-	//	if err != nil {
-	//		Fail("cmd.Run() failed with " + err.Error())
-	//	}
 	if errStdout != nil || errStderr != nil {
 		Fail("failed to capture stdout or stderr")
 	}

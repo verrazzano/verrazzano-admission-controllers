@@ -16,11 +16,11 @@ import (
 	k8sValidations "k8s.io/apimachinery/pkg/util/validation"
 )
 
-func validateModel(arRequest v1beta1.AdmissionReview, model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) v1beta1.AdmissionReview {
+func validateModel(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) v1beta1.AdmissionReview {
 	glog.V(6).Info("In validateModel code")
 
 	// All secrets in the model must be defined in the default namespace.
-	response := validateSecrets(model, clientsets)
+	response := validateModelSecrets(model, clientsets)
 	if response != "" {
 		return errorAdmissionReview(response)
 	}
@@ -92,8 +92,8 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 }
 
 // Validate that each secret in the model has a matching secret in the default namespace
-func validateSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) string {
-	glog.V(6).Info("In validateSecrets code")
+func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) string {
+	glog.V(6).Info("In validateModelSecrets code")
 
 	// Check image pull secrets for Helidon applications
 	for _, ha := range model.Spec.HelidonApplications {

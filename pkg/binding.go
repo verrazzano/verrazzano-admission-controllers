@@ -54,6 +54,12 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 		return errorAdmissionReview(s.Join(errMessages, ", "))
 	}
 
+	// All secrets in the binding must be defined in the default namespace.
+	response = validateBindingSecrets(binding, clientsets)
+	if response != "" {
+		return errorAdmissionReview(response)
+	}
+
 	glog.Info("validation of binding successful")
 	return v1beta1.AdmissionReview{}
 }
@@ -207,4 +213,38 @@ func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verr
 	}
 
 	return message
+}
+
+// Validate that each secret in the binding has a matching secret in the default namespace
+func validateBindingSecrets(binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) string {
+	glog.V(6).Info("In validateBindingSecrets code")
+
+	// Check database credentials
+	for _, dbBinding := range binding.Spec.DatabaseBindings {
+		message := getBindingSecrets(clientsets, dbBinding.Credentials, "databaseBindings.credentials", dbBinding.Name)
+		if message != "" {
+			return message
+		}
+	}
+
+	return ""
+}
+
+// Get a secret and check for errors
+func getBindingSecrets(clientsets *Clientsets, secretName string, secretType string, compName string) string {
+	glog.V(6).Info("In getBindingSecrets code")
+
+	_, err := clientsets.K8sClientset.CoreV1().Secrets("default").Get(context.TODO(), secretName, metav1.GetOptions{})
+	if k8sErrors.IsNotFound(err) {
+		message := fmt.Sprintf("binding references %s \"%s\" for %s.  This secret must be created in the default namespace before proceeding.", secretType, secretName, compName)
+		glog.Error(message)
+		return message
+	}
+	if err != nil {
+		message := fmt.Sprintf("failed to get referenced secret %s in namespace default: %v", secretName, err)
+		glog.Error(message)
+		return message
+	}
+
+	return ""
 }
