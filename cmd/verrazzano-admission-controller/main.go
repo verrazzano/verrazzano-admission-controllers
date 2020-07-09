@@ -28,8 +28,6 @@ var (
 )
 
 func main() {
-	// create logger for main function
-	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "VerrazzanoAdmissionController").Str("name", "ControllerInit").Logger()
 
 	flag.StringVar(&tlscert, "tlsCertFile", "/etc/certs/cert.pem", "File containing the x509 Certificate for HTTPS.")
 	flag.StringVar(&tlskey, "tlsKeyFile", "/etc/certs/key.pem", "File containing the x509 private key to --tlsCertFile.")
