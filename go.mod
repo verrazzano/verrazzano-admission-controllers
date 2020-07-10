@@ -1,3 +1,6 @@
+// Copyright (C) 2020, Oracle Corporation and/or its affiliates.
+// Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
 module github.com/verrazzano/verrazzano-admission-controllers
 
 go 1.13
@@ -15,7 +18,6 @@ require (
 	k8s.io/apiextensions-apiserver v0.18.2
 	k8s.io/apimachinery v0.18.2
 	k8s.io/client-go v12.0.0+incompatible
-	sigs.k8s.io/kind v0.7.0 // indirect
 )
 
 replace k8s.io/client-go => k8s.io/client-go v0.18.2

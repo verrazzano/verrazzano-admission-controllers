@@ -7767,13 +7767,6 @@ Copyright 2019 The Kubernetes Authors.
 Copyright2019 The Kubernetes Authors.
 
 -------- Dependency
-sigs.k8s.io/kind
--------- Copyrights
-# Copyright 2019 The Kubernetes Authors.
-Copyright 2019 The Kubernetes Authors.
-Copyright 2018 The Kubernetes Authors.
-
--------- Dependency
 sigs.k8s.io/kubebuilder
 -------- Copyrights
 #  Copyright 2019 The Kubernetes Authors.
@@ -7973,7 +7966,6 @@ k8s.io/utils
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-tools
-sigs.k8s.io/kind
 sigs.k8s.io/kubebuilder
 sigs.k8s.io/kustomize
 sigs.k8s.io/structured-merge-diff
@@ -9383,11 +9375,6 @@ github.com/alecthomas/units
 Copyright (C) 2014 Alec Thomas
 
 -------- Dependency
-github.com/alessio/shellescape
--------- Copyrights
-Copyright (c) 2016 Alessio Treglia
-
--------- Dependency
 github.com/andreyvit/diff
 -------- Copyrights
 Copyright (c) 2017 Andrey Tarantsov
@@ -9965,7 +9952,6 @@ Copyright (c) 2018 otiai10
 github.com/pelletier/go-toml
 -------- Copyrights
 Copyright (c) 2013 - 2017 Thomas Pelletier, Eric Anderton
-// Copyright 2016 Google LLC
 
 -------- Dependency
 github.com/peterbourgon/diskv
@@ -10283,7 +10269,6 @@ github.com/Shopify/sarama
 github.com/Shopify/toxiproxy
 github.com/agnivade/levenshtein
 github.com/alecthomas/units
-github.com/alessio/shellescape
 github.com/andreyvit/diff
 github.com/antihax/optional
 github.com/armon/circbuf
@@ -11186,4 +11171,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ATTRIBUTION-HELPER-GENERATED:
-License file based on go.mod with md5 sum: e4e13f8fb5416d6fe91d3df58e5fa5bf
+License file based on go.mod with md5 sum: 95c2e5e9d190ffc91a73378ceca80430
