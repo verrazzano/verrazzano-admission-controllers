@@ -10,3 +10,6 @@ coverage.cov
 coverage.html
 *-test-result.xml
 **/.DS_Store
+known_licenses.txt
+no_licenses.txt
+thirdparty_licenses
