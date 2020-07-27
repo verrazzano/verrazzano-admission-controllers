@@ -87,10 +87,6 @@ unit-test: go-install
 coverage:
 	./build/scripts/coverage.sh html
 
-.PHONY: thirdparty-check
-thirdparty-check:
-	./build/scripts/thirdparty_check.sh
-
 #
 # Tests-related tasks
 #
