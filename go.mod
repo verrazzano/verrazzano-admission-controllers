@@ -11,9 +11,6 @@ require (
 	github.com/onsi/gomega v1.9.0
 	github.com/spf13/pflag v1.0.5
 	github.com/verrazzano/verrazzano-crd-generator v0.3.29
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9 // indirect
-	golang.org/x/sys v0.0.0-20200610111108-226ff32320da // indirect
-	google.golang.org/protobuf v1.24.0 // indirect
 	k8s.io/api v0.18.2
 	k8s.io/apiextensions-apiserver v0.18.2
 	k8s.io/apimachinery v0.18.2
