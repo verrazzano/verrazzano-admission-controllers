@@ -6,6 +6,8 @@ package integ_test
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"os"
@@ -23,6 +25,9 @@ import (
 )
 
 const verrazzanoValidation = "verrazzano-validation"
+
+// Randomly generated password used by test
+var testPwd = generateRandomString()
 
 var _ = BeforeSuite(func() {
 	_, stderr := runCommand("kubectl apply -f testdata/local-cluster.yaml")
@@ -210,7 +215,7 @@ var _ = Describe("Apply model", func() {
 
 var _ = Describe("Apply model", func() {
 	It("with missing webLogicCredentialsSecret", func() {
-		_, stderr := runCommand("kubectl create secret docker-registry ocr --docker-username=user-id --docker-password=welcome --docker-server=container-registry.oracle.com")
+		_, stderr := runCommand("kubectl create secret docker-registry ocr --docker-username=user-id --docker-password=" + testPwd + " --docker-server=container-registry.oracle.com")
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/missing-weblogic-credentials-secret-model.yaml")
 		Expect(stderr).To(ContainSubstring("model references weblogicDomains.domainCRValues.webLogicCredentialsSecret \"domain-credentials\" for component weblogic-domain.  This secret must be created in the default namespace before proceeding."))
@@ -221,9 +226,9 @@ var _ = Describe("Apply model", func() {
 
 var _ = Describe("Apply model", func() {
 	It("with missing configOverrideSecrets", func() {
-		_, stderr := runCommand("kubectl create secret docker-registry ocr --docker-username=user-id --docker-password=welcome --docker-server=container-registry.oracle.com")
+		_, stderr := runCommand("kubectl create secret docker-registry ocr --docker-username=user-id --docker-password=" + testPwd + " --docker-server=container-registry.oracle.com")
 		Expect(stderr).To(Equal(""))
-		_, stderr = runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=welcome")
+		_, stderr = runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=" + testPwd)
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/missing-config-override-secrets-model.yaml")
 		Expect(stderr).To(ContainSubstring("model references weblogicDomains.domainCRValues.configOverrideSecrets \"config-secret\" for component weblogic-domain.  This secret must be created in the default namespace before proceeding."))
@@ -236,7 +241,7 @@ var _ = Describe("Apply model", func() {
 
 var _ = Describe("Apply binding", func() {
 	It("with missing databaseBinding credentials", func() {
-		_, stderr := runCommand("kubectl create secret generic found-credentials --from-literal=username=user-id --from-literal=password=welcome")
+		_, stderr := runCommand("kubectl create secret generic found-credentials --from-literal=username=user-id --from-literal=password=" + testPwd)
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/min-model.yaml")
 		Expect(stderr).To(Equal(""))
@@ -258,9 +263,9 @@ var _ = Describe("Apply model", func() {
 
 var _ = Describe("Apply model", func() {
 	It("with invalid environmentVariableForPort in rest connection", func() {
-		_, stderr := runCommand("kubectl create secret docker-registry ocr --docker-username=user-id --docker-password=welcome --docker-server=container-registry.oracle.com")
+		_, stderr := runCommand("kubectl create secret docker-registry ocr --docker-username=user-id --docker-password=" + testPwd + " --docker-server=container-registry.oracle.com")
 		Expect(stderr).To(Equal(""))
-		_, stderr = runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=welcome")
+		_, stderr = runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=" + testPwd)
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/invalid-conn-rest-env-vars-weblogic-model.yaml")
 		Expect(stderr).To(ContainSubstring("a valid environment variable name must consist of alphabetic characters"))
@@ -285,7 +290,7 @@ var _ = Describe("Apply model", func() {
 		Expect(stderr).To(ContainSubstring("cannot unmarshal number -1 into Go struct field VerrazzanoHelidon.spec.helidonApplications.targetPort of type uint"))
 	})
 	It("WebLogic with invalid ports", func() {
-		_, stderr := runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=welcome")
+		_, stderr := runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=" + testPwd)
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/invalid-ports-weblogic-model.yaml")
 		Expect(stderr).To(ContainSubstring("Port -1 is not valid. must be between 1 and 65535, inclusive"))
@@ -300,7 +305,7 @@ var _ = Describe("Apply model", func() {
 		Expect(stderr).To(Equal(""))
 	})
 	It("WebLogic with non-default ports", func() {
-		_, stderr := runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=welcome")
+		_, stderr := runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=" + testPwd)
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/non-default-ports-weblogic-model.yaml")
 		Expect(stderr).To(Equal(""))
@@ -316,7 +321,7 @@ var _ = Describe("Apply model", func() {
 		Expect(stderr).To(Equal(""))
 	})
 	It("WebLogic with default ports", func() {
-		_, stderr := runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=welcome")
+		_, stderr := runCommand("kubectl create secret generic domain-credentials --from-literal=username=user-id --from-literal=password=" + testPwd)
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/default-ports-weblogic-model.yaml")
 		Expect(stderr).To(Equal(""))
@@ -469,4 +474,11 @@ func runCommand(commandLine string) (string, string) {
 	}
 	outStr, errStr := string(stdoutBuf.Bytes()), string(stderrBuf.Bytes())
 	return outStr, errStr
+}
+
+// generateRandomString returns a base64 encoded generated random string.
+func generateRandomString() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return base64.StdEncoding.EncodeToString(b)
 }
