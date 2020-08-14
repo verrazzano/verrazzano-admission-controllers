@@ -1,0 +1,19 @@
+# Copyright (C) 2020, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: missing-clusters-weblogic-model
+  namespace: default
+spec:
+  description: "Model with missing clusters"
+  weblogicDomains:
+    - name: "weblogic-domain"
+      adminPort: 0
+      domainCRValues:
+        imagePullSecrets: []
+        image: weblogic-domain:1.0
+        logHome: /u01/oracle/user_projects/domains/weblogic-domain/logs
+        webLogicCredentialsSecret:
+          name: domain-credentials-missing-clusters

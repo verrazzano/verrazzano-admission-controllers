@@ -330,6 +330,26 @@ var _ = Describe("Apply model", func() {
 		_, stderr = runCommand("kubectl delete secret domain-credentials")
 		Expect(stderr).To(Equal(""))
 	})
+	It("WebLogic with missing clusters", func() {
+		_, stderr := runCommand("kubectl create secret generic domain-credentials-missing-clusters --from-literal=username=user-id --from-literal=password=" + testPwd)
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl apply -f testdata/missing-clusters-weblogic-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete -f testdata/missing-clusters-weblogic-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete secret domain-credentials-missing-clusters")
+		Expect(stderr).To(Equal(""))
+	})
+	It("WebLogic with empty array clusters", func() {
+		_, stderr := runCommand("kubectl create secret generic domain-credentials-empty-array-clusters --from-literal=username=user-id --from-literal=password=" + testPwd)
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl apply -f testdata/empty-array-clusters-weblogic-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete -f testdata/empty-array-clusters-weblogic-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete secret domain-credentials-empty-array-clusters")
+		Expect(stderr).To(Equal(""))
+	})
 })
 
 var _ = Describe("Namespace", func() {
