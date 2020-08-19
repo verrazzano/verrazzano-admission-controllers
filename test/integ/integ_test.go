@@ -192,6 +192,24 @@ var _ = Describe("Apply binding", func() {
 	})
 })
 
+var _ = Describe("Apply binding", func() {
+	It("with a placement using the default namespace", func() {
+		_, stderr := runCommand("kubectl apply -f testdata/min-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl apply -f testdata/default-namespace-in-placement-binding.yaml")
+		Expect(stderr).To(ContainSubstring("default namespace is not allowed in placements of binding"))
+		_, stderr = runCommand("kubectl delete -f testdata/min-model.yaml")
+		Expect(stderr).To(Equal(""))
+	})
+})
+
+var _ = Describe("Apply model", func() {
+	It("with WebLogic domain containing more than cluster", func() {
+		_, stderr := runCommand("kubectl apply -f testdata/domain-with-multiple-clusters-model.yaml")
+		Expect(stderr).To(ContainSubstring("More than one WebLogic cluster is not allowed for WebLogic domain weblogic-domain"))
+	})
+})
+
 var _ = Describe("Apply model", func() {
 	It("with missing Helidon application imagePullSecret", func() {
 		_, stderr := runCommand("kubectl apply -f testdata/missing-helidon-secret-model.yaml")
@@ -207,7 +225,7 @@ var _ = Describe("Apply model", func() {
 })
 
 var _ = Describe("Apply model", func() {
-	It("with missing Weblogic imagePullSecret", func() {
+	It("with missing WebLogic imagePullSecret", func() {
 		_, stderr := runCommand("kubectl apply -f testdata/missing-weblogic-secret-model.yaml")
 		Expect(stderr).To(ContainSubstring("model references weblogicDomains.domainCRValues.imagePullSecret \"ocr\" for component weblogic-domain.  This secret must be created in the default namespace before proceeding."))
 	})
@@ -294,7 +312,7 @@ var _ = Describe("Apply model", func() {
 		Expect(stderr).To(Equal(""))
 		_, stderr = runCommand("kubectl apply -f testdata/invalid-ports-weblogic-model.yaml")
 		Expect(stderr).To(ContainSubstring("Port -1 is not valid. must be between 1 and 65535, inclusive"))
-		Expect(stderr).To(ContainSubstring("AdminPort and T3Port in Weblogic domain weblogic-domain have the same value"))
+		Expect(stderr).To(ContainSubstring("AdminPort and T3Port in WebLogic domain weblogic-domain have the same value"))
 		_, stderr = runCommand("kubectl delete secret domain-credentials")
 		Expect(stderr).To(Equal(""))
 	})

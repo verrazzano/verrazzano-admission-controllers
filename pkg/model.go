@@ -19,8 +19,13 @@ import (
 func validateModel(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) v1beta1.AdmissionReview {
 	glog.V(6).Info("In validateModel code")
 
+	response := validateSingleWebLogicCluster(model)
+	if response != "" {
+		return errorAdmissionReview(response)
+	}
+
 	// All secrets in the model must be defined in the default namespace.
-	response := validateModelSecrets(model, clientsets)
+	response = validateModelSecrets(model, clientsets)
 	if response != "" {
 		return errorAdmissionReview(response)
 	}
@@ -115,7 +120,7 @@ func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientse
 		}
 	}
 
-	// Check image pull secrets for Weblogic domains
+	// Check image pull secrets for WebLogic domains
 	for _, domain := range model.Spec.WeblogicDomains {
 		for _, secret := range domain.DomainCRValues.ImagePullSecrets {
 			message := getSecret(clientsets, secret.Name, "weblogicDomains.domainCRValues.imagePullSecret", domain.Name)
@@ -125,7 +130,7 @@ func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientse
 		}
 	}
 
-	// Check Weblogic domain credential secrets
+	// Check WebLogic domain credential secrets
 	for _, cred := range model.Spec.WeblogicDomains {
 		secret := cred.DomainCRValues.WebLogicCredentialsSecret
 		message := getSecret(clientsets, secret.Name, "weblogicDomains.domainCRValues.webLogicCredentialsSecret", cred.Name)
@@ -134,7 +139,7 @@ func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientse
 		}
 	}
 
-	// Check Weblogic domain config override secrets
+	// Check WebLogic domain config override secrets
 	for _, configOverride := range model.Spec.WeblogicDomains {
 		for _, secret := range configOverride.DomainCRValues.ConfigOverrideSecrets {
 			message := getSecret(clientsets, secret, "weblogicDomains.domainCRValues.configOverrideSecrets", configOverride.Name)
@@ -180,6 +185,26 @@ func validateCoherenceClusters(model v1beta1v8o.VerrazzanoModel) string {
 	return ""
 }
 
+// Validate that there is only one WebLogic cluster per domain
+func validateSingleWebLogicCluster(model v1beta1v8o.VerrazzanoModel) string {
+	glog.V(6).Info("In validateSingleWebLogicCluster code")
+
+	var messages []string
+	for _, wd := range model.Spec.WeblogicDomains {
+		if len(wd.DomainCRValues.Clusters) > 1 {
+			message := fmt.Sprintf("More than one WebLogic cluster is not allowed for WebLogic domain %s", wd.Name)
+			glog.Error(message)
+			messages = append(messages, message)
+		}
+	}
+
+	if len(messages) > 0 {
+		return s.Join(messages, "; ")
+	}
+
+	return ""
+}
+
 func validateWebLogicDomains(model v1beta1v8o.VerrazzanoModel) string {
 	glog.V(6).Info("In validateWebLogicDomains code")
 
@@ -205,7 +230,7 @@ func validateWebLogicDomains(model v1beta1v8o.VerrazzanoModel) string {
 		}
 
 		if wd.AdminPort != 0 && wd.T3Port != 0 && wd.AdminPort == wd.T3Port {
-			message := fmt.Sprintf("AdminPort and T3Port in Weblogic domain %s have the same value: %v", wd.Name, wd.AdminPort)
+			message := fmt.Sprintf("AdminPort and T3Port in WebLogic domain %s have the same value: %v", wd.Name, wd.AdminPort)
 			glog.Error(message)
 			portMessages = append(portMessages, message)
 		}

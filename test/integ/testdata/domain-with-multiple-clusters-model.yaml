@@ -1,0 +1,22 @@
+# Copyright (C) 2020, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: domain-with-multiple-clusters-model
+  namespace: default
+spec:
+  description: "Model with WebLogic domain containing multiple clusters"
+  weblogicDomains:
+    - name: "weblogic-domain"
+      domainCRValues:
+        clusters:
+          - clusterName: cluster-1
+          - clusterName: cluster-2
+        image: weblogic-domain:1.0
+        imagePullSecrets:
+          - name: ocr
+        logHome: /u01/oracle/user_projects/domains/weblogic-domain/logs
+        webLogicCredentialsSecret:
+          name: weblogic-domain-weblogic-credentials

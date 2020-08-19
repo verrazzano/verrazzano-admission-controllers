@@ -42,6 +42,11 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 		return errorAdmissionReview(response)
 	}
 
+	response = validatePlacementNamespaces(binding)
+	if response != "" {
+		return errorAdmissionReview(response)
+	}
+
 	// Validate Ingress Bindings
 	errMessages := validateIngressBinding(binding.Spec.IngressBindings)
 	if len(errMessages) > 0 {
@@ -64,8 +69,27 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 	return v1beta1.AdmissionReview{}
 }
 
+// Validate that the default namespace is not used in a binding placement
+func validatePlacementNamespaces(binding v1beta1v8o.VerrazzanoBinding) string {
+	glog.V(6).Info("In validatePlacementNamespaces code")
+
+	for _, placement := range binding.Spec.Placement {
+		for _, namespace := range placement.Namespaces {
+			if namespace.Name == "default" {
+				message := "default namespace is not allowed in placements of binding"
+				glog.Error(message)
+				return message
+			}
+		}
+	}
+
+	return ""
+}
+
 // Validate componets in the binding
 func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) []string {
+	glog.V(6).Info("In validateComponents code")
+
 	var errMessages []string
 	// Get all components referenced in the binding
 	componentsInBindingSet := make(map[string]bool)
@@ -146,6 +170,8 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 
 // Validate ingressBindings
 func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBinding) []string {
+	glog.V(6).Info("In validateIngressBinding code")
+
 	var errMessages []string
 	for _, ingressBinding := range ingressBindings {
 		// validate ingressBinding > dnsName
@@ -191,6 +217,8 @@ func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBindin
 
 // Validate that each placement name has a matching VerrazzanoManagedClusters custom resource
 func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) string {
+	glog.V(6).Info("In validateClusters code")
+
 	var missingClusters = ""
 	for _, placement := range binding.Spec.Placement {
 		_, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoManagedClusters(arRequest.Request.Namespace).Get(context.TODO(), placement.Name, metav1.GetOptions{})
