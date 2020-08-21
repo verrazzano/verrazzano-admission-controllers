@@ -6,6 +6,8 @@ NAME:=verrazzano-admission-controller
 DOCKER_IMAGE_NAME ?= ${NAME}-dev
 TAG=$(shell git rev-parse HEAD)
 DOCKER_IMAGE_TAG = ${TAG}
+SHORT_COMMIT_HASH=$(shell git rev-parse --short HEAD)
+PUBLISH_IMAGE_TAG = ${TAG_NAME}-${SHORT_COMMIT_HASH}-${BUILD_NUMBER}
 
 CREATE_LATEST_TAG=0
 
@@ -73,8 +75,8 @@ push: build
 .PHONY: push-tag
 push-tag:
 	docker pull ${DOCKER_IMAGE_FULLNAME}:${DOCKER_IMAGE_TAG}
-	docker tag ${DOCKER_IMAGE_FULLNAME}:${DOCKER_IMAGE_TAG} ${DOCKER_IMAGE_FULLNAME}:${TAG_NAME}
-	docker push ${DOCKER_IMAGE_FULLNAME}:${TAG_NAME}
+	docker tag ${DOCKER_IMAGE_FULLNAME}:${DOCKER_IMAGE_TAG} ${DOCKER_IMAGE_FULLNAME}:${PUBLISH_IMAGE_TAG}
+	docker push ${DOCKER_IMAGE_FULLNAME}:${PUBLISH_IMAGE_TAG}
 
 #
 # Tests-related tasks
