@@ -22,6 +22,7 @@ import (
 
 // Handler listen to admission requests and sends responses
 type ServerHandler struct {
+	VerrazzanoUri string
 }
 
 type Clientsets struct {
@@ -112,7 +113,7 @@ func (sh *ServerHandler) Serve(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			glog.Infof("processing binding name: %s:%s", binding.Namespace, binding.Name)
-			arResponse = validateBinding(arRequest, binding, clientsets)
+			arResponse = validateBinding(arRequest, binding, clientsets, sh.VerrazzanoUri)
 		default:
 			glog.Errorf("invalid resource kind %s specified", arRequest.Request.Kind.Kind)
 			http.Error(w, fmt.Sprintf("invalid resource kind %s specified", arRequest.Request.Kind.Kind), http.StatusBadRequest)

@@ -272,6 +272,17 @@ var _ = Describe("Apply binding", func() {
 	})
 })
 
+var _ = Describe("Apply binding", func() {
+	It("with very long binding name", func() {
+		_, stderr := runCommand("kubectl apply -f testdata/min-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl apply -f testdata/very-long-name-binding.yaml")
+		Expect(stderr).To(ContainSubstring("the VMI domain name is greater than 64 characters: *.vmi.very-long-name-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-binding"))
+		_, stderr = runCommand("kubectl delete -f testdata/min-model.yaml")
+		Expect(stderr).To(Equal(""))
+	})
+})
+
 var _ = Describe("Apply model", func() {
 	It("with invalid environmentVariableForHost in rest connection", func() {
 		_, stderr := runCommand("kubectl apply -f testdata/invalid-conn-rest-env-vars-coherence-model.yaml")

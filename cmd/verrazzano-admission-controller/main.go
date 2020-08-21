@@ -22,14 +22,16 @@ const (
 )
 
 var (
-	tlscert string
-	tlskey  string
+	tlscert       string
+	tlskey        string
+	verrazzanoUri string
 )
 
 func main() {
 
 	flag.StringVar(&tlscert, "tlsCertFile", "/etc/certs/cert.pem", "File containing the x509 Certificate for HTTPS.")
 	flag.StringVar(&tlskey, "tlsKeyFile", "/etc/certs/key.pem", "File containing the x509 private key to --tlsCertFile.")
+	flag.StringVar(&verrazzanoUri, "verrazzanoUri", "", "Verrazzano URI, for example my-verrazzano-1.verrazzano.example.com")
 
 	flag.Parse()
 	InitLogs()
@@ -46,7 +48,9 @@ func main() {
 		Addr:      fmt.Sprintf(":%v", port),
 		TLSConfig: &tls.Config{Certificates: []tls.Certificate{certs}},
 	}
-	sh := pkg.ServerHandler{}
+	sh := pkg.ServerHandler{
+		VerrazzanoUri: verrazzanoUri,
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/validate", sh.Serve)
 	server.Handler = mux

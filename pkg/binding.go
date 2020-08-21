@@ -18,7 +18,7 @@ import (
 )
 
 // Validate binding
-func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) v1beta1.AdmissionReview {
+func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets, verrazzanoUri string) v1beta1.AdmissionReview {
 	// Don't allow create if the binding refers to a non-existing model
 	modelList, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil && modelList != nil {
@@ -34,6 +34,17 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 			glog.Error(message)
 			return errorAdmissionReview(message)
 		}
+	}
+
+	// Verify that the length of the VMI domain name is not greater than 64
+	const VmiDomainNameFormat = "*.vmi.%s.%s"
+	const MaxVmiDomainNameLen = 64
+	domainName := fmt.Sprintf(VmiDomainNameFormat, binding.Name, verrazzanoUri)
+	domainNameLen := len(domainName)
+	if domainNameLen > MaxVmiDomainNameLen {
+		message := fmt.Sprintf("the VMI domain name is greater than %d characters: %s.  The binding name %s is %d characters long.  Reduce the size by using a binding name that is at least %d characters shorter.", MaxVmiDomainNameLen, domainName, binding.Name, len(binding.Name), domainNameLen - MaxVmiDomainNameLen)
+		glog.Error(message)
+		return errorAdmissionReview(message)
 	}
 
 	// All placements names in the binding must have a matching VerrazzanoManagedClusters custom resource

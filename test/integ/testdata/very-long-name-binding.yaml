@@ -1,0 +1,21 @@
+# Copyright (C) 2020, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoBinding
+metadata:
+  name: very-long-name-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-binding
+  namespace: default
+spec:
+  description: "Very long binding name"
+  modelName: min-model
+  placement:
+    - name: local
+      namespaces:
+        - name: ns1
+          components:
+            - name: min-helidon-application
+
+  ingressBindings:
+    - name: "local-ingress"
+      dnsName: "*"
