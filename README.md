@@ -2,7 +2,7 @@
 
 The Verrazzano Admission Controller is a Kubernetes Admission Controller that implements a validating admissions
 webhook.  The webhook performs validations for the `VerrazzanoModel` and `VerrazzanoBinding` custom resources.
-For example, the webhook will check if secrets required by your `VerrazzanoModel` and `VerrazzanoBinding` custom 
+For example, the webhook will check if secrets required by your `VerrazzanoModel` and `VerrazzanoBinding` custom
 resources have been created or not.
 
 ## Artifacts
@@ -10,7 +10,6 @@ resources have been created or not.
 On a successful release (which occurs on a Git tag), this repo:
 - publishes a Docker image: `container-registry.oracle.com/verrazzano/verrazzano-admission-controller:tag`
 
-**NOTE TO AUDITORS - that URL will change to GitHub releases URL**
 
 ## Building
 
@@ -92,5 +91,3 @@ Only pull requests from committers that can be verified as having signed the OCA
 ## Introducing a new dependency
 
 Please be aware that pull requests that seek to introduce a new dependency will be subject to additional review.  In general, contributors should avoid dependencies with incompatible licenses, and should try to use recent versions of dependencies.  Standard security vulnerability checklists will be consulted before accepting a new dependency.  Dependencies on closed-source code, including WebLogic Server, will most likely be rejected.
-
-
