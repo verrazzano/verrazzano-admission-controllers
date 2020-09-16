@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/verrazzano/verrazzano-admission-controllers)](https://goreportcard.com/report/github.com/verrazzano/verrazzano-admission-controllers)
+
 # Verrazzano Admission Controller
 
 The Verrazzano Admission Controller is a Kubernetes Admission Controller that implements a validating admissions

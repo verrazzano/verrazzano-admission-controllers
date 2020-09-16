@@ -20,16 +20,18 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// Handler listen to admission requests and sends responses
+// ServerHandler listens to admission requests and sends responses
 type ServerHandler struct {
-	VerrazzanoUri string
+	VerrazzanoURI string
 }
 
+// Clientsets contains the clients for needed APIs
 type Clientsets struct {
 	V8oClientset *v8oclientset.Clientset
 	K8sClientset *kubernetes.Clientset
 }
 
+// Serve function receives validation requests for Verrazzano model and bindings
 func (sh *ServerHandler) Serve(w http.ResponseWriter, r *http.Request) {
 	glog.Info("Received validation request")
 
@@ -113,7 +115,7 @@ func (sh *ServerHandler) Serve(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			glog.Infof("processing binding name: %s:%s", binding.Namespace, binding.Name)
-			arResponse = validateBinding(arRequest, binding, clientsets, sh.VerrazzanoUri)
+			arResponse = validateBinding(arRequest, binding, clientsets, sh.VerrazzanoURI)
 		default:
 			glog.Errorf("invalid resource kind %s specified", arRequest.Request.Kind.Kind)
 			http.Error(w, fmt.Sprintf("invalid resource kind %s specified", arRequest.Request.Kind.Kind), http.StatusBadRequest)

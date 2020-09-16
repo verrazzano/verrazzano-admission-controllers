@@ -470,6 +470,9 @@ func doesCRDExist(crdName string) bool {
 	}
 
 	crds, err := apixClient.CustomResourceDefinitions().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		Fail("Failed to get list of CustomResourceDefinitions")
+	}
 
 	for i := range crds.Items {
 		if strings.Compare(crds.Items[i].ObjectMeta.Name, crdName) == 0 {
