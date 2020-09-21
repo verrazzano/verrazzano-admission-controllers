@@ -25,7 +25,9 @@ pipeline {
         CREATE_LATEST_TAG = "${env.BRANCH_NAME == 'master' ? '1' : '0'}"
         GOPATH = "$HOME/go"
         GO_REPO_PATH = "${GOPATH}/src/github.com/verrazzano"
-        DOCKER_CREDS = credentials('ocir-pull-and-push-account')
+        DOCKER_CREDS = credentials('github-packages-credentials-rw')
+        DOCKER_REPO = 'ghcr.io'
+        DOCKER_NAMESPACE = 'verrazzano'
         NETRC_FILE = credentials('netrc')
         GITHUB = credentials('github-markxnelns-private-access-token')
     }
