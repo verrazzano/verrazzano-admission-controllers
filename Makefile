@@ -101,7 +101,7 @@ push-tag:
 #
 .PHONY: unit-test
 unit-test: go-install
-	go test -v ./pkg/apis/... ./pkg/controler/... ./cmd/...
+	go test -v ./pkg/... ./cmd/...
 
 .PHONY: coverage
 coverage:

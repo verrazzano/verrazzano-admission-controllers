@@ -396,6 +396,68 @@ var _ = Describe("Namespace", func() {
 
 })
 
+var _ = Describe("Apply model with GenericComponents", func() {
+	It("with invalid initContainer port", func() {
+		_, stderr := runCommand("kubectl apply -f testdata/generic-components-model-invalidPort.yaml")
+		Expect(stderr).To(ContainSubstring("Port -1 is not valid. must be between 1 and 65535"))
+	})
+	It("with missing initContainer env reference", func() {
+		createSecret("ocr")
+		_, stderr := runCommand("kubectl apply -f testdata/generic-components-model.yaml")
+		Expect(stderr).To(ContainSubstring("model references genericComponents.Deployment.InitContainers.Env \"init-credentials\""))
+		deleteSecret("ocr")
+	})
+	It("with missing container env reference", func() {
+		createSecret("ocr")
+		createSecret("init-credentials")
+		_, stderr := runCommand("kubectl apply -f testdata/generic-components-model.yaml")
+		Expect(stderr).To(ContainSubstring("model references genericComponents.Deployment.Containers.Env \"mysql-credentials\""))
+		deleteSecret("ocr")
+		deleteSecret("init-credentials")
+	})
+	It("with all secrets", func() {
+		createSecret("ocr")
+		createSecret("init-credentials")
+		createSecret("mysql-credentials")
+		_, stderr := runCommand("kubectl apply -f testdata/generic-components-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl apply -f testdata/generic-components-binding.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete -f testdata/generic-components-binding.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl delete -f testdata/generic-components-model.yaml")
+		Expect(stderr).To(Equal(""))
+		deleteSecret("mysql-credentials")
+		deleteSecret("init-credentials")
+		deleteSecret("ocr")
+	})
+	It("with invalid binding", func() {
+		createSecret("ocr")
+		createSecret("init-credentials")
+		createSecret("mysql-credentials")
+		_, stderr := runCommand("kubectl apply -f testdata/generic-components-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl apply -f testdata/generic-components-binding-invalid.yaml")
+		Expect(stderr).To(ContainSubstring("Multiple occurrence of component across placement namespaces. Invalid Component: [mysql]"))
+		_, stderr = runCommand("kubectl delete -f testdata/generic-components-model.yaml")
+		Expect(stderr).To(Equal(""))
+		deleteSecret("mysql-credentials")
+		deleteSecret("init-credentials")
+		deleteSecret("ocr")
+	})
+})
+
+func createSecret(name string) string {
+	cmd := fmt.Sprintf("kubectl create secret generic %s --from-literal=username=%s --from-literal=password=%s", name, name, name)
+	_, stderr := runCommand(cmd)
+	return stderr
+}
+func deleteSecret(name string) string {
+	cmd := fmt.Sprintf("kubectl delete secret %s", name)
+	_, stderr := runCommand(cmd)
+	return stderr
+}
+
 // ---------------------------   helper functions ------------------------------------
 
 func getKubeconfig() string {

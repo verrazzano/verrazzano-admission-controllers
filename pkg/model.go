@@ -11,6 +11,7 @@ import (
 	"github.com/golang/glog"
 	v1beta1v8o "github.com/verrazzano/verrazzano-crd-generator/pkg/apis/verrazzano/v1beta1"
 	"k8s.io/api/admission/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sValidations "k8s.io/apimachinery/pkg/util/validation"
@@ -45,6 +46,11 @@ func validateModel(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) v1b
 		return errorAdmissionReview(response)
 	}
 
+	response = validateGenericComponents(model, clientsets)
+	if response != "" {
+		return errorAdmissionReview(response)
+	}
+
 	glog.Info("validation of model successful")
 	return v1beta1.AdmissionReview{}
 }
@@ -55,7 +61,7 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 	// Delete is being called for namespaces (for some unknown reason) when there is single cluster.  In this case,
 	// there is no resource name so just return and don't generate an error.
 	if len(arRequest.Request.Name) == 0 {
-		_, err := clientsets.K8sClientset.CoreV1().Namespaces().Get(context.TODO(), arRequest.Request.Namespace, metav1.GetOptions{})
+		_, err := clientsets.K8sClient.CoreV1().Namespaces().Get(context.TODO(), arRequest.Request.Namespace, metav1.GetOptions{})
 		if err == nil {
 			glog.Info("delete of namespace was requested, no model to delete")
 			return v1beta1.AdmissionReview{}
@@ -63,7 +69,7 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 	}
 
 	// Get the model we want to delete
-	model, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).Get(context.TODO(), arRequest.Request.Name, metav1.GetOptions{})
+	model, err := clientsets.V8oClient.VerrazzanoModels(arRequest.Request.Namespace).Get(context.TODO(), arRequest.Request.Name, metav1.GetOptions{})
 
 	// Delete is called for resources that don't exist. If that is the case, then just return
 	if k8sErrors.IsNotFound(err) {
@@ -80,7 +86,7 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 
 	// Don't allow delete if a deployed binding references this model
 	if model != nil {
-		bindingList, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoBindings(arRequest.Request.Namespace).List(context.TODO(), metav1.ListOptions{})
+		bindingList, err := clientsets.V8oClient.VerrazzanoBindings(arRequest.Request.Namespace).List(context.TODO(), metav1.ListOptions{})
 		if err == nil && bindingList != nil {
 			for _, binding := range bindingList.Items {
 				if binding.Spec.ModelName == model.Name {
@@ -149,6 +155,28 @@ func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientse
 		}
 	}
 
+	// Check GenericComponents' secrets
+	for _, gc := range model.Spec.GenericComponents {
+		for _, sec := range gc.Deployment.ImagePullSecrets {
+			message := getSecret(clientsets, sec.Name, "genericComponents.Deployment.Template.Spec.ImagePullSecrets", gc.Name)
+			if message != "" {
+				return message
+			}
+		}
+		for _, container := range gc.Deployment.InitContainers {
+			message := validateContainerEnv(container, "genericComponents.Deployment.InitContainers.Env", gc.Name, clientsets)
+			if message != "" {
+				return message
+			}
+		}
+		for _, container := range gc.Deployment.Containers {
+			message := validateContainerEnv(container, "genericComponents.Deployment.Containers.Env", gc.Name, clientsets)
+			if message != "" {
+				return message
+			}
+		}
+	}
+
 	return ""
 }
 
@@ -156,7 +184,7 @@ func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientse
 func getSecret(clientsets *Clientsets, secretName string, secretType string, compName string) string {
 	glog.V(6).Info("In getSecret code")
 
-	_, err := clientsets.K8sClientset.CoreV1().Secrets("default").Get(context.TODO(), secretName, metav1.GetOptions{})
+	_, err := clientsets.K8sClient.CoreV1().Secrets("default").Get(context.TODO(), secretName, metav1.GetOptions{})
 	if k8sErrors.IsNotFound(err) {
 		message := fmt.Sprintf("model references %s \"%s\" for component %s.  This secret must be created in the default namespace before proceeding.", secretType, secretName, compName)
 		glog.Error(message)
@@ -307,4 +335,52 @@ func validatePort(port int) string {
 		return errors
 	}
 	return ""
+}
+
+func validateGenericComponents(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) string {
+	// Check GenericComponents' secrets
+	var errorMessages []string
+	for _, gc := range model.Spec.GenericComponents {
+		for _, container := range gc.Deployment.InitContainers {
+			errorMessages = validateContainerPort(container, errorMessages)
+		}
+		for _, container := range gc.Deployment.Containers {
+			errorMessages = validateContainerPort(container, errorMessages)
+		}
+		for _, connection := range gc.Connections {
+			message := validateRestConnections(connection.Rest)
+			if message != "" {
+				errorMessages = append(errorMessages, message)
+			}
+		}
+	}
+	if len(errorMessages) > 0 {
+		return s.Join(errorMessages, "; ")
+	}
+	return ""
+}
+
+func validateContainerEnv(container corev1.Container, secretType, compName string, clientsets *Clientsets) string {
+	for _, ev := range container.Env {
+		if ev.ValueFrom != nil && ev.ValueFrom.SecretKeyRef != nil {
+			secName := ev.ValueFrom.SecretKeyRef.Name
+			message := getSecret(clientsets, secName, secretType, compName)
+			if message != "" {
+				return message
+			}
+		}
+	}
+	return ""
+}
+
+func validateContainerPort(container corev1.Container, errorMessages []string) []string {
+	for _, port := range container.Ports {
+		if port.ContainerPort != 0 {
+			message := validatePort(int(port.ContainerPort))
+			if message != "" {
+				errorMessages = append(errorMessages, message)
+			}
+		}
+	}
+	return errorMessages
 }

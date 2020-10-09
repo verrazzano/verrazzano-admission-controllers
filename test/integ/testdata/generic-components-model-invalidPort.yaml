@@ -1,0 +1,53 @@
+# Copyright (c) 2020, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: generic-components-model
+  namespace: default
+spec:
+  description: "Generic Components model"
+  genericComponents:
+    - name: mysql
+      deployment:
+        initContainers:
+          - env:
+              - name: MY_USER
+                value: foo
+            image: "container-registry.oracle.com/os/oraclelinux:7-slim"
+            imagePullPolicy: IfNotPresent
+            name: mysql
+            ports:
+              - containerPort: -1
+                name: http
+                protocol: TCP
+            volumeMounts:
+              - mountPath: /docker-entrypoint-initdb.d
+                name: mysql-initdb
+        containers:
+          - env:
+              - name: MYSQL_DATABASE
+                value: books
+            image: "mysql:8.0.20"
+            imagePullPolicy: IfNotPresent
+            name: mysql
+            ports:
+              - containerPort: 3306
+                name: mysql
+                protocol: TCP
+            resources: {}
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+            volumeMounts:
+              - mountPath: /docker-entrypoint-initdb.d
+                name: mysql-initdb
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+          - configMap:
+              defaultMode: 420
+              name: mysql-initdb-config
+            name: mysql-initdb

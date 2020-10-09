@@ -12,9 +12,9 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	v1beta1v8o "github.com/verrazzano/verrazzano-crd-generator/pkg/apis/verrazzano/v1beta1"
-	v8oclientset "github.com/verrazzano/verrazzano-crd-generator/pkg/client/clientset/versioned"
 
 	"github.com/golang/glog"
+	v8oclientset "github.com/verrazzano/verrazzano-crd-generator/pkg/client/clientset/versioned/typed/verrazzano/v1beta1"
 	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -27,8 +27,8 @@ type ServerHandler struct {
 
 // Clientsets contains the clients for needed APIs
 type Clientsets struct {
-	V8oClientset *v8oclientset.Clientset
-	K8sClientset *kubernetes.Clientset
+	V8oClient v8oclientset.VerrazzanoV1beta1Interface
+	K8sClient kubernetes.Interface
 }
 
 // Serve function receives validation requests for Verrazzano model and bindings
@@ -156,21 +156,21 @@ func createClientsets() (*Clientsets, error) {
 	}
 
 	glog.V(6).Info("Building Verrazzano clientset")
-	clientset, err := v8oclientset.NewForConfig(cfg)
+	v8oclient, err := v8oclientset.NewForConfig(cfg)
 	if err != nil {
 		glog.Errorf("Error building Verrazzano clientset: %v", err)
 		return nil, err
 	}
 
 	glog.V(6).Info("Building kubernetes clientset")
-	k8sclientset, err := kubernetes.NewForConfig(cfg)
+	k8sclient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		glog.Errorf("Error building kubernetes clientset: %v", err)
 		return nil, err
 	}
 
 	return &Clientsets{
-		V8oClientset: clientset,
-		K8sClientset: k8sclientset,
+		V8oClient: v8oclient,
+		K8sClient: k8sclient,
 	}, nil
 }

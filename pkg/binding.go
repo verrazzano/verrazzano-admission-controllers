@@ -20,7 +20,7 @@ import (
 // Validate binding
 func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets, verrazzanoURI string) v1beta1.AdmissionReview {
 	// Don't allow create if the binding refers to a non-existing model
-	modelList, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).List(context.TODO(), metav1.ListOptions{})
+	modelList, err := clientsets.V8oClient.VerrazzanoModels(arRequest.Request.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err == nil && modelList != nil {
 		modelFound := false
 		for _, model := range modelList.Items {
@@ -130,7 +130,7 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 
 	// Get model referenced in the binding
 	modelName := binding.Spec.ModelName
-	model, _ := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoModels(arRequest.Request.Namespace).Get(context.TODO(), modelName, metav1.GetOptions{})
+	model, _ := clientsets.V8oClient.VerrazzanoModels(arRequest.Request.Namespace).Get(context.TODO(), modelName, metav1.GetOptions{})
 
 	// Get all components referenced in the model
 	componentsInModel := make(map[string]bool)
@@ -142,6 +142,9 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 	}
 	for _, weblogicDomain := range model.Spec.WeblogicDomains {
 		componentsInModel[weblogicDomain.Name] = true
+	}
+	for _, genericComponent := range model.Spec.GenericComponents {
+		componentsInModel[genericComponent.Name] = true
 	}
 
 	// Each componentsInBindingSet component must be present in componentsInModel
@@ -165,7 +168,6 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 			}
 		}
 	}
-
 	// Each componentsInPlacementNamespacesSet component must be present in componentsInModel
 	for component := range componentsInPlacementNamespacesSet {
 		if !componentsInModel[component] {
@@ -232,7 +234,7 @@ func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verr
 
 	var missingClusters = ""
 	for _, placement := range binding.Spec.Placement {
-		_, err := clientsets.V8oClientset.VerrazzanoV1beta1().VerrazzanoManagedClusters(arRequest.Request.Namespace).Get(context.TODO(), placement.Name, metav1.GetOptions{})
+		_, err := clientsets.V8oClient.VerrazzanoManagedClusters(arRequest.Request.Namespace).Get(context.TODO(), placement.Name, metav1.GetOptions{})
 		if k8sErrors.IsNotFound(err) {
 			if missingClusters != "" {
 				missingClusters += ","
@@ -273,7 +275,7 @@ func validateBindingSecrets(binding v1beta1v8o.VerrazzanoBinding, clientsets *Cl
 func getBindingSecrets(clientsets *Clientsets, secretName string, secretType string, compName string) string {
 	glog.V(6).Info("In getBindingSecrets code")
 
-	_, err := clientsets.K8sClientset.CoreV1().Secrets("default").Get(context.TODO(), secretName, metav1.GetOptions{})
+	_, err := clientsets.K8sClient.CoreV1().Secrets("default").Get(context.TODO(), secretName, metav1.GetOptions{})
 	if k8sErrors.IsNotFound(err) {
 		message := fmt.Sprintf("binding references %s \"%s\" for %s.  This secret must be created in the default namespace before proceeding.", secretType, secretName, compName)
 		glog.Error(message)
