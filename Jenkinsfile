@@ -1,7 +1,7 @@
 // Copyright (c) 2020, Oracle and/or its affiliates.
 // Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
 
-def HEAD_COMMIT
+def DOCKER_IMAGE_TAG
 
 pipeline {
     options {
@@ -19,7 +19,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_CI_IMAGE_NAME = 'verrazzano-admission-controller-ci-jenkins'
+        DOCKER_CI_IMAGE_NAME = 'verrazzano-admission-controller-jenkins'
         DOCKER_PUBLISH_IMAGE_NAME = 'verrazzano-admission-controller'
         DOCKER_IMAGE_NAME = "${env.BRANCH_NAME == 'master' ? env.DOCKER_PUBLISH_IMAGE_NAME : env.DOCKER_CI_IMAGE_NAME}"
         CREATE_LATEST_TAG = "${env.BRANCH_NAME == 'master' ? '1' : '0'}"
@@ -51,6 +51,14 @@ pipeline {
                     mkdir -p ${GO_REPO_PATH}/verrazzano-admission-controllers
                     tar cf - . | (cd ${GO_REPO_PATH}/verrazzano-admission-controllers/ ; tar xf -)
                 """
+                
+                script {
+                    def props = readProperties file: '.verrazzano-development-version'
+                    VERRAZZANO_DEV_VERSION = props['verrazzano-development-version']
+                    TIMESTAMP = sh(returnStdout: true, script: "date +%Y%m%d%H%M%S").trim()
+                    SHORT_COMMIT_HASH = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
+                    DOCKER_IMAGE_TAG = "${VERRAZZANO_DEV_VERSION}-${TIMESTAMP}-${SHORT_COMMIT_HASH}"
+                }
             }
         }
 
@@ -59,7 +67,7 @@ pipeline {
             steps {
                 sh """
                     cd ${GO_REPO_PATH}/verrazzano-admission-controllers
-                    make push DOCKER_REPO=${env.DOCKER_REPO} DOCKER_NAMESPACE=${env.DOCKER_NAMESPACE} DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME} CREATE_LATEST_TAG=${CREATE_LATEST_TAG}
+                    make push DOCKER_REPO=${env.DOCKER_REPO} DOCKER_NAMESPACE=${env.DOCKER_NAMESPACE} DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME} DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG} CREATE_LATEST_TAG=${CREATE_LATEST_TAG} 
                 """
             }
         }
@@ -163,8 +171,7 @@ pipeline {
             when { not { buildingTag() } }
             steps {
                 script {
-                    HEAD_COMMIT = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
-                    clairScanTemp "${env.DOCKER_REPO}/${env.DOCKER_NAMESPACE}/${DOCKER_IMAGE_NAME}:${HEAD_COMMIT}"
+                    clairScanTemp "${env.DOCKER_REPO}/${env.DOCKER_NAMESPACE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
                 }
             }
             post {
