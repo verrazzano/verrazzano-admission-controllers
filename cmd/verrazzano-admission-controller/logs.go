@@ -12,7 +12,7 @@ import (
 // Initialize logs with Time and Global Level of Logs set at Info
 func InitLogs() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	
+
 	// Log levels are outlined as follows:
 	// Panic: 5
 	// Fatal: 4
@@ -30,4 +30,3 @@ func InitLogs() {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 }
-

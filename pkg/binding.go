@@ -7,9 +7,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/golang/glog"
-	s "strings"
-	"os"
 	"github.com/rs/zerolog"
+	"os"
+	s "strings"
 
 	v1beta1v8o "github.com/verrazzano/verrazzano-crd-generator/pkg/apis/verrazzano/v1beta1"
 	"k8s.io/api/admission/v1beta1"
