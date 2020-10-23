@@ -6,7 +6,6 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"github.com/golang/glog"
 	"github.com/rs/zerolog"
 	"os"
 	s "strings"
@@ -47,7 +46,7 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 	domainNameLen := len(domainName)
 	if domainNameLen > MaxVmiDomainNameLen {
 		message := fmt.Sprintf("the VMI domain name is greater than %d characters: %s.  The binding name %s is %d characters long.  Reduce the size by using a binding name that is at least %d characters shorter.", MaxVmiDomainNameLen, domainName, binding.Name, len(binding.Name), domainNameLen-MaxVmiDomainNameLen)
-		glog.Error(message)
+		logger.Error().Msg(message)
 		return errorAdmissionReview(message)
 	}
 
@@ -86,13 +85,16 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 
 // Validate that the default namespace is not used in a binding placement
 func validatePlacementNamespaces(binding v1beta1v8o.VerrazzanoBinding) string {
-	glog.V(6).Info("In validatePlacementNamespaces code")
+	// create initial logger with predefined elements
+	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "VerrazzanoBinding").Str("name", binding.Name).Logger()
+
+	logger.Info().Msgf("In validatePlacementNamespaces code")
 
 	for _, placement := range binding.Spec.Placement {
 		for _, namespace := range placement.Namespaces {
 			if namespace.Name == "default" {
 				message := "default namespace is not allowed in placements of binding"
-				glog.Error(message)
+				logger.Error().Msg(message)
 				return message
 			}
 		}
@@ -201,8 +203,6 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 
 // Validate ingressBindings
 func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBinding) []string {
-	glog.V(6).Info("In validateIngressBinding code")
-
 	var errMessages []string
 	for _, ingressBinding := range ingressBindings {
 		// create initial logger with predefined elements

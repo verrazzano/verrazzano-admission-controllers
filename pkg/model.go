@@ -6,7 +6,6 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"github.com/golang/glog"
 	"github.com/rs/zerolog"
 	k8sValidations "k8s.io/apimachinery/pkg/util/validation"
 	"os"
@@ -234,13 +233,15 @@ func validateCoherenceClusters(model v1beta1v8o.VerrazzanoModel) string {
 
 // Validate that there is only one WebLogic cluster per domain
 func validateSingleWebLogicCluster(model v1beta1v8o.VerrazzanoModel) string {
-	glog.V(6).Info("In validateSingleWebLogicCluster code")
+	logger := zerolog.New(os.Stderr).With().Timestamp().Str("kind", "VerrazzanoModel").Str("name", model.Name).Logger()
+
+	logger.Info().Msgf("In validateSingleWebLogicCluster code")
 
 	var messages []string
 	for _, wd := range model.Spec.WeblogicDomains {
 		if len(wd.DomainCRValues.Clusters) > 1 {
 			message := fmt.Sprintf("More than one WebLogic cluster is not allowed for WebLogic domain %s", wd.Name)
-			glog.Error(message)
+			logger.Error().Msg(message)
 			messages = append(messages, message)
 		}
 	}
