@@ -447,6 +447,52 @@ var _ = Describe("Apply model with GenericComponents", func() {
 	})
 })
 
+var _ = Describe("Apply model with invalid k8s resource name references", func() {
+	It("for generic components", func() {
+		_, stderr := runCommand("kubectl apply -f testdata/invalid-generic-names-model.yaml")
+		Expect(stderr).To(ContainSubstring("spec.genericComponents[0].name: Invalid value: \"Bad-component-name\""))
+		Expect(stderr).To(ContainSubstring("spec.genericComponents[0].deployment.imagePullSecrets[0].name: Invalid value: \"bad_image_pull_secret\""))
+		Expect(stderr).To(ContainSubstring("spec.genericComponents[0].deployment.containers[0].env[0].valueFrom.secretKeyRef.name: Invalid value: \"$bad-secret-ref2\""))
+		Expect(stderr).To(ContainSubstring("spec.genericComponents[0].deployment.initContainers[0].env[1].valueFrom.secretKeyRef.name: Invalid value: \"$bad-secret-ref1\""))
+		Expect(stderr).To(ContainSubstring("spec.genericComponents[0].connections[0].ingress[1].name: Invalid value: \"FOO\""))
+	})
+	It("for Coherence clusters", func() {
+		_, stderr := runCommand("kubectl apply -f testdata/invalid-coherence-names-model.yaml")
+		Expect(stderr).To(ContainSubstring("spec.coherenceClusters[0].name: Invalid value: \"Bad-component-name\""))
+		Expect(stderr).To(ContainSubstring("spec.coherenceClusters[0].imagePullSecrets[1].name: Invalid value: \"bad_image_pull_secret\""))
+		Expect(stderr).To(ContainSubstring("spec.coherenceClusters[0].connections[0].ingress[0].name: Invalid value: \"BAR\""))
+	})
+	It("for Helidon applications", func() {
+		_, stderr := runCommand("kubectl apply -f testdata/invalid-helidon-names-model.yaml")
+		Expect(stderr).To(ContainSubstring("spec.helidonApplications[0].name: Invalid value: \"Bad-component-name\""))
+		Expect(stderr).To(ContainSubstring("spec.helidonApplications[0].imagePullSecrets[1].name: Invalid value: \"bad_image_pull_secret\""))
+		Expect(stderr).To(ContainSubstring("spec.helidonApplications[0].connections[0].ingress[0].name: Invalid value: \"bad-ingress$\""))
+	})
+	It("for Weblogic applications", func() {
+		_, stderr := runCommand("kubectl apply -f testdata/invalid-weblogic-names-model.yaml")
+		Expect(stderr).To(ContainSubstring("spec.weblogicDomains[0].name: Invalid value: \"Bad-component-name\""))
+		Expect(stderr).To(ContainSubstring("spec.weblogicDomains[0].domainCRValues.domainUID: Invalid value: \"BAD_DOMAIN_UID\""))
+		Expect(stderr).To(ContainSubstring("spec.weblogicDomains[0].domainCRValues.imagePullSecrets[0].name: Invalid value: \"bad_image_pull_secret\""))
+		Expect(stderr).To(ContainSubstring("spec.weblogicDomains[0].domainCRValues.webLogicCredentialsSecret.name: Invalid value: \"bad$weblogic-credentials\""))
+		Expect(stderr).To(ContainSubstring("spec.weblogicDomains[0].domainCRValues.configOverrideSecrets[0]: Invalid value: \"bad_secret\""))
+		Expect(stderr).To(ContainSubstring("spec.weblogicDomains[0].domainCRValues.configuration.secrets[0]: Invalid value: \"bad_secret\""))
+		Expect(stderr).To(ContainSubstring("spec.weblogicDomains[0].connections[0].ingress[0].name: Invalid value: \"bad-ingress$\""))
+	})
+})
+
+var _ = Describe("Apply binding", func() {
+	It("with invalid k8s resource name references", func() {
+		_, stderr := runCommand("kubectl apply -f testdata/min-model.yaml")
+		Expect(stderr).To(Equal(""))
+		_, stderr = runCommand("kubectl apply -f testdata/invalid-names-binding.yaml")
+		Expect(stderr).To(ContainSubstring("spec.placement[0].namespaces[1].name: Invalid value: \"bad_name\""))
+		Expect(stderr).To(ContainSubstring("spec.databaseBindings[0].credential: Invalid value: \"bad$name\""))
+		_, stderr = runCommand("kubectl delete -f testdata/min-model.yaml")
+		Expect(stderr).To(Equal(""))
+	})
+
+})
+
 func createSecret(name string) string {
 	cmd := fmt.Sprintf("kubectl create secret generic %s --from-literal=username=%s --from-literal=password=%s", name, name, name)
 	_, stderr := runCommand(cmd)

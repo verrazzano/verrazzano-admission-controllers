@@ -1,0 +1,21 @@
+# Copyright (c) 2020, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: invalid.names.model
+  namespace: default
+spec:
+  description: "Invalid names model"
+  coherenceClusters:
+    - name: Bad-component-name
+      image: coherence-image:0.1
+      cacheConfig: "bobbys-cache-config.xml"
+      pofConfig: "bobbys-pof-config.xml"
+      imagePullSecrets:
+        - name: good-image-pull-secret
+        - name: bad_image_pull_secret
+      connections:
+        - ingress:
+            - name: "BAR"
+            - name: "good-ingress"

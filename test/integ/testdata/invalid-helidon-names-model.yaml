@@ -1,0 +1,19 @@
+# Copyright (c) 2020, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: invalid.names.model
+  namespace: default
+spec:
+  description: "Invalid names model"
+  helidonApplications:
+    - name: Bad-component-name
+      image: helidon-image:0.1
+      imagePullSecrets:
+        - name: good-image-pull-secret
+        - name: bad_image_pull_secret
+      connections:
+        - ingress:
+            - name: "bad-ingress$"
+            - name: "good-ingress"

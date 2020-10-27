@@ -46,9 +46,7 @@ func TestValidateGenericComponents(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			fc := NewFakeVzClient(&test.args.model, binding)
-			clientsets := &Clientsets{V8oClient: fc, K8sClient: test.args.kubeClient}
-			if errorMessage := validateGenericComponents(test.args.model, clientsets); len(test.expectedErrors) > 0 {
+			if errorMessage := validateGenericComponents(test.args.model); len(test.expectedErrors) > 0 {
 				for _, s := range test.expectedErrors {
 					if !strings.Contains(errorMessage, s) {
 						t.Errorf("Error %v should contain %v", errorMessage, test.expectedErrors)

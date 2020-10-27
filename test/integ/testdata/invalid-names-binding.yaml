@@ -1,0 +1,26 @@
+# Copyright (c) 2020, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoBinding
+metadata:
+  name: invalid.names.binding
+  namespace: default
+spec:
+  description: "Invalid names binding"
+  modelName: min-model
+  placement:
+    - name: local
+      namespaces:
+        - name: good-name
+          components:
+            - name: application1
+        - name: bad_name
+          components:
+            - name: application2
+  databaseBindings:
+    - name: mysql1
+      credentials: bad$name
+      url: "jdbc:mysql://mysql.bob.svc.default.local:3306/books"
+    - name: mysql2
+      credentials: good-credentials
+      url: "jdbc:mysql://mysql.bob.svc.default.local:3306/books"

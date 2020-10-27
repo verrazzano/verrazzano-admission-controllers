@@ -36,6 +36,12 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 		}
 	}
 
+	// All names that reference a k8s name must be valid.
+	response := validateBindingResourceNames(binding)
+	if response != "" {
+		return errorAdmissionReview(response)
+	}
+
 	// Verify that the length of the VMI domain name is not greater than 64
 	const VmiDomainNameFormat = "*.vmi.%s.%s"
 	const MaxVmiDomainNameLen = 64
@@ -48,7 +54,7 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 	}
 
 	// All placements names in the binding must have a matching VerrazzanoManagedClusters custom resource
-	response := validateClusters(arRequest, binding, clientsets)
+	response = validateClusters(arRequest, binding, clientsets)
 	if response != "" {
 		return errorAdmissionReview(response)
 	}
@@ -78,6 +84,35 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 
 	glog.Info("validation of binding successful")
 	return v1beta1.AdmissionReview{}
+}
+
+// Validate names that will be used as Kubernetes resource names.
+// A validate k8s resource name must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an
+// alphanumeric character.  We use k8s validation functions to check the validity of names.
+func validateBindingResourceNames(binding v1beta1v8o.VerrazzanoBinding) string {
+	glog.V(6).Info("In validateBindingResourceNames code")
+
+	var errMessages []string
+
+	// Check if namespace names are valid
+	for i, placement := range binding.Spec.Placement {
+		for j, namespace := range placement.Namespaces {
+			field := fmt.Sprintf("spec.placement[%d].namespaces[%d].name", i, j)
+			errMessages = addInvalidNameFormatMessage(namespace.Name, field, errMessages)
+		}
+	}
+
+	// Check if database credentials names are valid
+	for i, dbBinding := range binding.Spec.DatabaseBindings {
+		field := fmt.Sprintf("spec.databaseBindings[%d].credential", i)
+		errMessages = addInvalidNameFormatMessage(dbBinding.Credentials, field, errMessages)
+	}
+
+	if len(errMessages) > 0 {
+		return s.Join(errMessages, "")
+	}
+
+	return ""
 }
 
 // Validate that the default namespace is not used in a binding placement

@@ -1,0 +1,42 @@
+# Copyright (c) 2020, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+apiVersion: verrazzano.io/v1beta1
+kind: VerrazzanoModel
+metadata:
+  name: invalid.names.model
+  namespace: default
+spec:
+  description: "Invalid names model"
+  genericComponents:
+    - name: Bad-component-name
+      deployment:
+        initContainers:
+          - env:
+              - name: MY_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: good-secret-ref
+                    key: username
+              - name: MY_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: $bad-secret-ref1
+                    key: password
+            image: "generic-initcontainer"
+            name: init-generic
+        containers:
+          - env:
+              - name: MYSQL_ROOT_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: $bad-secret-ref2
+                    key: password
+            image: "generic-container"
+            name: generic
+        imagePullSecrets:
+          - name: bad_image_pull_secret
+          - name: good-image-pull-secret
+      connections:
+        - ingress:
+            - name: "good-ingress"
+            - name: "FOO"

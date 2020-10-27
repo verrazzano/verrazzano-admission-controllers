@@ -20,7 +20,12 @@ import (
 func validateModel(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) v1beta1.AdmissionReview {
 	glog.V(6).Info("In validateModel code")
 
-	response := validateSingleWebLogicCluster(model)
+	response := validateModelResourceNames(model)
+	if response != "" {
+		return errorAdmissionReview(response)
+	}
+
+	response = validateSingleWebLogicCluster(model)
 	if response != "" {
 		return errorAdmissionReview(response)
 	}
@@ -46,7 +51,7 @@ func validateModel(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) v1b
 		return errorAdmissionReview(response)
 	}
 
-	response = validateGenericComponents(model, clientsets)
+	response = validateGenericComponents(model)
 	if response != "" {
 		return errorAdmissionReview(response)
 	}
@@ -102,6 +107,232 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 	return v1beta1.AdmissionReview{}
 }
 
+// Validate names that will be used as Kubernetes resource names.
+// A validate k8s resource name must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an
+// alphanumeric character.  We use k8s validation functions to check the validity of names.
+func validateModelResourceNames(model v1beta1v8o.VerrazzanoModel) string {
+	glog.V(6).Info("In validateModelResourceNames code")
+
+	var errMessages []string
+
+	for _, msg := range validateModelHelidonNames(model) {
+		errMessages = append(errMessages, msg)
+	}
+
+	for _, msg := range validateModelCoherenceNames(model) {
+		errMessages = append(errMessages, msg)
+	}
+
+	for _, msg := range validateModelWeblogicNames(model) {
+		errMessages = append(errMessages, msg)
+	}
+
+	for _, msg := range validateModelGenericComponentNames(model) {
+		errMessages = append(errMessages, msg)
+	}
+
+	for _, msg := range validateModelAllIngressNames(model) {
+		errMessages = append(errMessages, msg)
+	}
+
+	if len(errMessages) > 0 {
+		return s.Join(errMessages, "")
+	}
+
+	return ""
+}
+
+// Validate names for Helidon applications
+func validateModelHelidonNames(model v1beta1v8o.VerrazzanoModel) []string {
+	glog.V(6).Info("In validateModelHelidonNames code")
+
+	var errMessages []string
+
+	for i, ha := range model.Spec.HelidonApplications {
+		// Check the Helidon component name
+		field := fmt.Sprintf("spec.helidonApplications[%d].name", i)
+		errMessages = addInvalidNameFormatMessage(ha.Name, field, errMessages)
+
+		// Check the Helidon imagePullSecrets name
+		for k, secret := range ha.ImagePullSecrets {
+			field := fmt.Sprintf("spec.helidonApplications[%d].imagePullSecrets[%d].name", i, k)
+			errMessages = addInvalidNameFormatMessage(secret.Name, field, errMessages)
+		}
+	}
+
+	return errMessages
+}
+
+// Validate names for Coherence clusters
+func validateModelCoherenceNames(model v1beta1v8o.VerrazzanoModel) []string {
+	glog.V(6).Info("In validateModelCoherenceNames code")
+
+	var errMessages []string
+
+	for i, cc := range model.Spec.CoherenceClusters {
+		// Check the Coherence component name
+		field := fmt.Sprintf("spec.coherenceClusters[%d].name", i)
+		errMessages = addInvalidNameFormatMessage(cc.Name, field, errMessages)
+
+		// Check the Coherence imagePullSecrets name
+		for k, secret := range cc.ImagePullSecrets {
+			field := fmt.Sprintf("spec.coherenceClusters[%d].imagePullSecrets[%d].name", i, k)
+			errMessages = addInvalidNameFormatMessage(secret.Name, field, errMessages)
+		}
+	}
+
+	return errMessages
+}
+
+// Validate names for WebLogic domains
+func validateModelWeblogicNames(model v1beta1v8o.VerrazzanoModel) []string {
+	glog.V(6).Info("In validateModelWeblogicNames code")
+
+	var errMessages []string
+
+	for i, domain := range model.Spec.WeblogicDomains {
+		// Check the WebLogic component name
+		field := fmt.Sprintf("spec.weblogicDomains[%d].name", i)
+		errMessages = addInvalidNameFormatMessage(domain.Name, field, errMessages)
+
+		// Check the WebLogic domain UID name
+		if len(domain.DomainCRValues.DomainUID) > 0 {
+			field := fmt.Sprintf("spec.weblogicDomains[%d].domainCRValues.domainUID", i)
+			errMessages = addInvalidNameFormatMessage(domain.DomainCRValues.DomainUID, field, errMessages)
+		}
+
+		// Check the WebLogic imagePullSecrets name
+		for j, secret := range domain.DomainCRValues.ImagePullSecrets {
+			field := fmt.Sprintf("spec.weblogicDomains[%d].domainCRValues.imagePullSecrets[%d].name", i, j)
+			errMessages = addInvalidNameFormatMessage(secret.Name, field, errMessages)
+		}
+
+		// Check the webLogicCredentialsSecret name
+		secret := domain.DomainCRValues.WebLogicCredentialsSecret
+		field = fmt.Sprintf("spec.weblogicDomains[%d].domainCRValues.webLogicCredentialsSecret.name", i)
+		errMessages = addInvalidNameFormatMessage(secret.Name, field, errMessages)
+
+		// Check the WebLogic configOverrideSecrets name
+		for j, secret := range domain.DomainCRValues.ConfigOverrideSecrets {
+			field := fmt.Sprintf("spec.weblogicDomains[%d].domainCRValues.configOverrideSecrets[%d]", i, j)
+			errMessages = addInvalidNameFormatMessage(secret, field, errMessages)
+		}
+
+		// Check the WebLogic configuration secrets name
+		for j, secret := range domain.DomainCRValues.Configuration.Secrets {
+			field := fmt.Sprintf("spec.weblogicDomains[%d].domainCRValues.configuration.secrets[%d]", i, j)
+			errMessages = addInvalidNameFormatMessage(secret, field, errMessages)
+		}
+	}
+
+	return errMessages
+}
+
+// Validate names for generic components
+func validateModelGenericComponentNames(model v1beta1v8o.VerrazzanoModel) []string {
+	glog.V(6).Info("In validateModelGenericComponentNames code")
+
+	var errMessages []string
+
+	for i, generic := range model.Spec.GenericComponents {
+		// Check the generic component name
+		field := fmt.Sprintf("spec.genericComponents[%d].name", i)
+		errMessages = addInvalidNameFormatMessage(generic.Name, field, errMessages)
+
+		// Check the generic component imagePullSecrets name
+		for j, secret := range generic.Deployment.ImagePullSecrets {
+			field := fmt.Sprintf("spec.genericComponents[%d].deployment.imagePullSecrets[%d].name", i, j)
+			errMessages = addInvalidNameFormatMessage(secret.Name, field, errMessages)
+		}
+
+		// Check the generic component deployment containers for secret name references
+		for j, container := range generic.Deployment.Containers {
+			for k, env := range container.Env {
+				if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
+					field := fmt.Sprintf("spec.genericComponents[%d].deployment.containers[%d].env[%d].valueFrom.secretKeyRef.name", i, j, k)
+					errMessages = addInvalidNameFormatMessage(env.ValueFrom.SecretKeyRef.Name, field, errMessages)
+				}
+			}
+		}
+
+		// Check the generic component deployment init containers for secret name references
+		for j, container := range generic.Deployment.InitContainers {
+			for k, env := range container.Env {
+				if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
+					field := fmt.Sprintf("spec.genericComponents[%d].deployment.initContainers[%d].env[%d].valueFrom.secretKeyRef.name", i, j, k)
+					errMessages = addInvalidNameFormatMessage(env.ValueFrom.SecretKeyRef.Name, field, errMessages)
+				}
+			}
+		}
+
+	}
+
+	return errMessages
+}
+
+// Validate ingress connection names for all components
+func validateModelAllIngressNames(model v1beta1v8o.VerrazzanoModel) []string {
+	glog.V(6).Info("In validateModelAllIngressNames code")
+
+	var errMessages []string
+
+	// Check the Helidon applications ingress names
+	for i, ha := range model.Spec.HelidonApplications {
+		for j, connection := range ha.Connections {
+			prefix := fmt.Sprintf("spec.helidonApplications[%d].connections[%d]", i, j)
+			for _, msg := range validateModelIngressNames(connection.Ingress, prefix) {
+				errMessages = append(errMessages, msg)
+			}
+		}
+	}
+
+	// Check the Coherence clusters ingress names
+	for i, cc := range model.Spec.CoherenceClusters {
+		for j, connection := range cc.Connections {
+			prefix := fmt.Sprintf("spec.coherenceClusters[%d].connections[%d]", i, j)
+			for _, msg := range validateModelIngressNames(connection.Ingress, prefix) {
+				errMessages = append(errMessages, msg)
+			}
+		}
+	}
+
+	// Check the WebLogic domains ingress names
+	for i, domain := range model.Spec.WeblogicDomains {
+		for j, connection := range domain.Connections {
+			prefix := fmt.Sprintf("spec.weblogicDomains[%d].connections[%d]", i, j)
+			for _, msg := range validateModelIngressNames(connection.Ingress, prefix) {
+				errMessages = append(errMessages, msg)
+			}
+		}
+	}
+
+	// Check the generic components ingress names
+	for i, generic := range model.Spec.GenericComponents {
+		for j, connection := range generic.Connections {
+			prefix := fmt.Sprintf("spec.genericComponents[%d].connections[%d]", i, j)
+			for _, msg := range validateModelIngressNames(connection.Ingress, prefix) {
+				errMessages = append(errMessages, msg)
+			}
+		}
+	}
+
+	return errMessages
+}
+
+// Validate ingress connections names
+func validateModelIngressNames(connections []v1beta1v8o.VerrazzanoIngressConnection, prefix string) []string {
+	glog.V(6).Info("In validateModelIngressNames code")
+
+	var errMessages []string
+
+	for i, ingress := range connections {
+		field := fmt.Sprintf("%s.ingress[%d].name", prefix, i)
+		errMessages = addInvalidNameFormatMessage(ingress.Name, field, errMessages)
+	}
+
+	return errMessages
+}
+
 // Validate that each secret in the model has a matching secret in the default namespace
 func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) string {
 	glog.V(6).Info("In validateModelSecrets code")
@@ -149,6 +380,16 @@ func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientse
 	for _, configOverride := range model.Spec.WeblogicDomains {
 		for _, secret := range configOverride.DomainCRValues.ConfigOverrideSecrets {
 			message := getSecret(clientsets, secret, "weblogicDomains.domainCRValues.configOverrideSecrets", configOverride.Name)
+			if message != "" {
+				return message
+			}
+		}
+	}
+
+	// Check WebLogic domain configuration secrets
+	for _, configurationSecrets := range model.Spec.WeblogicDomains {
+		for _, secret := range configurationSecrets.DomainCRValues.Configuration.Secrets {
+			message := getSecret(clientsets, secret, "weblogicDomains.domainCRValues.configuration.secrets", configurationSecrets.Name)
 			if message != "" {
 				return message
 			}
@@ -337,7 +578,7 @@ func validatePort(port int) string {
 	return ""
 }
 
-func validateGenericComponents(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) string {
+func validateGenericComponents(model v1beta1v8o.VerrazzanoModel) string {
 	// Check GenericComponents' secrets
 	var errorMessages []string
 	for _, gc := range model.Spec.GenericComponents {
