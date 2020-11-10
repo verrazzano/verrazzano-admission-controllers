@@ -8,8 +8,8 @@ import (
 	"fmt"
 	s "strings"
 
-	"github.com/golang/glog"
 	v1beta1v8o "github.com/verrazzano/verrazzano-crd-generator/pkg/apis/verrazzano/v1beta1"
+	"go.uber.org/zap"
 	"k8s.io/api/admission/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -18,7 +18,7 @@ import (
 )
 
 func validateModel(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) v1beta1.AdmissionReview {
-	glog.V(6).Info("In validateModel code")
+	zap.S().Debugw("In validateModel code")
 
 	response := validateModelResourceNames(model)
 	if response != "" {
@@ -56,19 +56,19 @@ func validateModel(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) v1b
 		return errorAdmissionReview(response)
 	}
 
-	glog.Info("validation of model successful")
+	zap.S().Infow("validation of model successful")
 	return v1beta1.AdmissionReview{}
 }
 
 func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1beta1.AdmissionReview {
-	glog.V(6).Info("In deleteModel code")
+	zap.S().Debugw("In deleteModel code")
 
 	// Delete is being called for namespaces (for some unknown reason) when there is single cluster.  In this case,
 	// there is no resource name so just return and don't generate an error.
 	if len(arRequest.Request.Name) == 0 {
 		_, err := clientsets.K8sClient.CoreV1().Namespaces().Get(context.TODO(), arRequest.Request.Namespace, metav1.GetOptions{})
 		if err == nil {
-			glog.Info("delete of namespace was requested, no model to delete")
+			zap.S().Infow("delete of namespace was requested, no model to delete")
 			return v1beta1.AdmissionReview{}
 		}
 	}
@@ -78,14 +78,14 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 
 	// Delete is called for resources that don't exist. If that is the case, then just return
 	if k8sErrors.IsNotFound(err) {
-		glog.Info("model does not exist, nothing to delete")
+		zap.S().Infow("model does not exist, nothing to delete")
 		return v1beta1.AdmissionReview{}
 	}
 
 	// Don't allow delete if we had an error getting the model
 	if err != nil {
 		message := fmt.Sprintf("error getting model for namespace %s: %v", arRequest.Request.Namespace, err)
-		glog.Error(message)
+		zap.S().Errorw(message)
 		return errorAdmissionReview(message)
 	}
 
@@ -96,14 +96,14 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 			for _, binding := range bindingList.Items {
 				if binding.Spec.ModelName == model.Name {
 					message := fmt.Sprintf("model cannot be deleted before binding %s is deleted in namespace %s", binding.Name, arRequest.Request.Namespace)
-					glog.Error(message)
+					zap.S().Errorw(message)
 					return errorAdmissionReview(message)
 				}
 			}
 		}
 	}
 
-	glog.Info("validation of model successful")
+	zap.S().Infow("validation of model successful")
 	return v1beta1.AdmissionReview{}
 }
 
@@ -111,7 +111,7 @@ func deleteModel(arRequest v1beta1.AdmissionReview, clientsets *Clientsets) v1be
 // A validate k8s resource name must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an
 // alphanumeric character.  We use k8s validation functions to check the validity of names.
 func validateModelResourceNames(model v1beta1v8o.VerrazzanoModel) string {
-	glog.V(6).Info("In validateModelResourceNames code")
+	zap.S().Debugw("In validateModelResourceNames code")
 
 	var errMessages []string
 
@@ -144,7 +144,7 @@ func validateModelResourceNames(model v1beta1v8o.VerrazzanoModel) string {
 
 // Validate names for Helidon applications
 func validateModelHelidonNames(model v1beta1v8o.VerrazzanoModel) []string {
-	glog.V(6).Info("In validateModelHelidonNames code")
+	zap.S().Debugw("In validateModelHelidonNames code")
 
 	var errMessages []string
 
@@ -165,7 +165,7 @@ func validateModelHelidonNames(model v1beta1v8o.VerrazzanoModel) []string {
 
 // Validate names for Coherence clusters
 func validateModelCoherenceNames(model v1beta1v8o.VerrazzanoModel) []string {
-	glog.V(6).Info("In validateModelCoherenceNames code")
+	zap.S().Debugw("In validateModelCoherenceNames code")
 
 	var errMessages []string
 
@@ -186,7 +186,7 @@ func validateModelCoherenceNames(model v1beta1v8o.VerrazzanoModel) []string {
 
 // Validate names for WebLogic domains
 func validateModelWeblogicNames(model v1beta1v8o.VerrazzanoModel) []string {
-	glog.V(6).Info("In validateModelWeblogicNames code")
+	zap.S().Debugw("In validateModelWeblogicNames code")
 
 	var errMessages []string
 
@@ -230,7 +230,7 @@ func validateModelWeblogicNames(model v1beta1v8o.VerrazzanoModel) []string {
 
 // Validate names for generic components
 func validateModelGenericComponentNames(model v1beta1v8o.VerrazzanoModel) []string {
-	glog.V(6).Info("In validateModelGenericComponentNames code")
+	zap.S().Debugw("In validateModelGenericComponentNames code")
 
 	var errMessages []string
 
@@ -272,7 +272,7 @@ func validateModelGenericComponentNames(model v1beta1v8o.VerrazzanoModel) []stri
 
 // Validate ingress connection names for all components
 func validateModelAllIngressNames(model v1beta1v8o.VerrazzanoModel) []string {
-	glog.V(6).Info("In validateModelAllIngressNames code")
+	zap.S().Debugw("In validateModelAllIngressNames code")
 
 	var errMessages []string
 
@@ -321,7 +321,7 @@ func validateModelAllIngressNames(model v1beta1v8o.VerrazzanoModel) []string {
 
 // Validate ingress connections names
 func validateModelIngressNames(connections []v1beta1v8o.VerrazzanoIngressConnection, prefix string) []string {
-	glog.V(6).Info("In validateModelIngressNames code")
+	zap.S().Debugw("In validateModelIngressNames code")
 
 	var errMessages []string
 
@@ -335,7 +335,7 @@ func validateModelIngressNames(connections []v1beta1v8o.VerrazzanoIngressConnect
 
 // Validate that each secret in the model has a matching secret in the default namespace
 func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientsets) string {
-	glog.V(6).Info("In validateModelSecrets code")
+	zap.S().Debugw("In validateModelSecrets code")
 
 	// Check image pull secrets for Helidon applications
 	for _, ha := range model.Spec.HelidonApplications {
@@ -423,17 +423,17 @@ func validateModelSecrets(model v1beta1v8o.VerrazzanoModel, clientsets *Clientse
 
 // Get a secret and check for errors
 func getSecret(clientsets *Clientsets, secretName string, secretType string, compName string) string {
-	glog.V(6).Info("In getSecret code")
+	zap.S().Debugw("In getSecret code")
 
 	_, err := clientsets.K8sClient.CoreV1().Secrets("default").Get(context.TODO(), secretName, metav1.GetOptions{})
 	if k8sErrors.IsNotFound(err) {
 		message := fmt.Sprintf("model references %s \"%s\" for component %s.  This secret must be created in the default namespace before proceeding.", secretType, secretName, compName)
-		glog.Error(message)
+		zap.S().Errorw(message)
 		return message
 	}
 	if err != nil {
 		message := fmt.Sprintf("failed to get referenced secret %s in namespace default: %v", secretName, err)
-		glog.Error(message)
+		zap.S().Errorw(message)
 		return message
 	}
 
@@ -441,7 +441,7 @@ func getSecret(clientsets *Clientsets, secretName string, secretType string, com
 }
 
 func validateCoherenceClusters(model v1beta1v8o.VerrazzanoModel) string {
-	glog.V(6).Info("In validateCoherenceClusters code")
+	zap.S().Debugw("In validateCoherenceClusters code")
 
 	for _, cc := range model.Spec.CoherenceClusters {
 		for _, connection := range cc.Connections {
@@ -456,13 +456,13 @@ func validateCoherenceClusters(model v1beta1v8o.VerrazzanoModel) string {
 
 // Validate that there is only one WebLogic cluster per domain
 func validateSingleWebLogicCluster(model v1beta1v8o.VerrazzanoModel) string {
-	glog.V(6).Info("In validateSingleWebLogicCluster code")
+	zap.S().Debugw("In validateSingleWebLogicCluster code")
 
 	var messages []string
 	for _, wd := range model.Spec.WeblogicDomains {
 		if len(wd.DomainCRValues.Clusters) > 1 {
 			message := fmt.Sprintf("More than one WebLogic cluster is not allowed for WebLogic domain %s", wd.Name)
-			glog.Error(message)
+			zap.S().Errorw(message)
 			messages = append(messages, message)
 		}
 	}
@@ -475,7 +475,7 @@ func validateSingleWebLogicCluster(model v1beta1v8o.VerrazzanoModel) string {
 }
 
 func validateWebLogicDomains(model v1beta1v8o.VerrazzanoModel) string {
-	glog.V(6).Info("In validateWebLogicDomains code")
+	zap.S().Debugw("In validateWebLogicDomains code")
 
 	for _, wd := range model.Spec.WeblogicDomains {
 		for _, connection := range wd.Connections {
@@ -500,7 +500,7 @@ func validateWebLogicDomains(model v1beta1v8o.VerrazzanoModel) string {
 
 		if wd.AdminPort != 0 && wd.T3Port != 0 && wd.AdminPort == wd.T3Port {
 			message := fmt.Sprintf("AdminPort and T3Port in WebLogic domain %s have the same value: %v", wd.Name, wd.AdminPort)
-			glog.Error(message)
+			zap.S().Errorw(message)
 			portMessages = append(portMessages, message)
 		}
 
@@ -512,7 +512,7 @@ func validateWebLogicDomains(model v1beta1v8o.VerrazzanoModel) string {
 }
 
 func validateHelidonApplications(model v1beta1v8o.VerrazzanoModel) string {
-	glog.V(6).Info("In validateHelidonApplications code")
+	zap.S().Debugw("In validateHelidonApplications code")
 
 	for _, ha := range model.Spec.HelidonApplications {
 		for _, connection := range ha.Connections {
@@ -547,19 +547,19 @@ func validateRestConnections(restConnections []v1beta1v8o.VerrazzanoRestConnecti
 		if len(errMessages) > 0 {
 			errMessages = append(errMessages, fmt.Sprintf("Invalid variable name: %s", rc.EnvironmentVariableForHost))
 			errors := s.Join(errMessages, ", ")
-			glog.Error(errors)
+			zap.S().Errorw(errors)
 			return errors
 		}
 		errMessages = k8sValidations.IsEnvVarName(rc.EnvironmentVariableForPort)
 		if len(errMessages) > 0 {
 			errMessages = append(errMessages, fmt.Sprintf("Invalid variable name: %s", rc.EnvironmentVariableForPort))
 			errors := s.Join(errMessages, ", ")
-			glog.Error(errors)
+			zap.S().Errorw(errors)
 			return errors
 		}
 		if rc.EnvironmentVariableForPort == rc.EnvironmentVariableForHost {
 			message := fmt.Sprintf("REST connection for target %s uses the same environment variable for host and port: %s", rc.Target, rc.EnvironmentVariableForHost)
-			glog.Error(message)
+			zap.S().Errorw(message)
 			return message
 		}
 	}
@@ -567,12 +567,12 @@ func validateRestConnections(restConnections []v1beta1v8o.VerrazzanoRestConnecti
 }
 
 func validatePort(port int) string {
-	glog.V(6).Info("Received this port: ", port)
+	zap.S().Debugw("Received this port: ", port)
 	errMessages := k8sValidations.IsValidPortNum(port)
 	if len(errMessages) > 0 {
 		invalidPortMsg := fmt.Sprintf("Port %v is not valid. ", port)
 		errors := invalidPortMsg + s.Join(errMessages, ", ")
-		glog.Error(errors)
+		zap.S().Errorw(errors)
 		return errors
 	}
 	return ""

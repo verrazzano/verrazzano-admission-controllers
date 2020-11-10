@@ -6,7 +6,7 @@ package pkg
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"go.uber.org/zap"
 	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sValidations "k8s.io/apimachinery/pkg/util/validation"
@@ -19,7 +19,7 @@ func addInvalidNameFormatMessage(name string, field string, errMessages []string
 
 	for _, msg := range k8sValidations.IsDNS1123Subdomain(name) {
 		msgOut := fmt.Sprintf(invalidNameFormat, field, name, msg)
-		glog.Error(msgOut)
+		zap.S().Errorw(msgOut)
 		errMessages = append(errMessages, msgOut)
 	}
 

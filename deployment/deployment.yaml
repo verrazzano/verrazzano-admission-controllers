@@ -80,7 +80,7 @@ spec:
           image: IMAGE_NAME:IMAGE_TAG
           imagePullPolicy: Never
           args:
-            - --v=4
+            - --zap-log-level=info
           volumeMounts:
             - name: webhook-certs
               mountPath: /etc/certs

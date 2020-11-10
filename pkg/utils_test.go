@@ -21,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 
-	"github.com/golang/glog"
+	"go.uber.org/zap"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -41,12 +41,12 @@ func ReadModel(path string) *vzv1b.VerrazzanoModel {
 	path = "../test/integ/" + path
 	b, err := readYamlToJSON(path)
 	if err != nil {
-		glog.Errorf("Error reading model file %v", err)
+		zap.S().Errorf("Error reading model file %v", err)
 	}
 	var model vzv1b.VerrazzanoModel
 	err = json.Unmarshal(b, &model)
 	if err != nil {
-		glog.Errorf("Error reading model file %v", err)
+		zap.S().Errorf("Error reading model file %v", err)
 	}
 	return &model
 }
@@ -56,12 +56,12 @@ func ReadBinding(path string) *vzv1b.VerrazzanoBinding {
 	path = "../test/integ/" + path
 	b, err := readYamlToJSON(path)
 	if err != nil {
-		glog.Errorf("Error reading binding file %v", err)
+		zap.S().Errorf("Error reading binding file %v", err)
 	}
 	var binding vzv1b.VerrazzanoBinding
 	err = json.Unmarshal(b, &binding)
 	if err != nil {
-		glog.Errorf("Error reading binding file %v", err)
+		zap.S().Errorf("Error reading binding file %v", err)
 	}
 	return &binding
 }

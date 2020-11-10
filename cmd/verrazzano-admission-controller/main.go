@@ -13,8 +13,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/golang/glog"
 	"github.com/verrazzano/verrazzano-admission-controllers/pkg"
+	"go.uber.org/zap"
+	kzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 const (
@@ -25,22 +26,22 @@ var (
 	tlscert       string
 	tlskey        string
 	verrazzanoURI string
+	zapOptions    = kzap.Options{}
 )
 
 func main() {
-
 	flag.StringVar(&tlscert, "tlsCertFile", "/etc/certs/cert.pem", "File containing the x509 Certificate for HTTPS.")
 	flag.StringVar(&tlskey, "tlsKeyFile", "/etc/certs/key.pem", "File containing the x509 private key to --tlsCertFile.")
 	flag.StringVar(&verrazzanoURI, "verrazzanoUri", "", "Verrazzano URI, for example my-verrazzano-1.verrazzano.example.com")
-
+	zapOptions.BindFlags(flag.CommandLine)
 	flag.Parse()
-	InitLogs()
+	InitLogs(zapOptions)
 
-	glog.V(4).Infof("Starting Verrazzano validation admission controller")
+	zap.S().Infof("Starting Verrazzano validation admission controller")
 
 	certs, err := tls.LoadX509KeyPair(tlscert, tlskey)
 	if err != nil {
-		glog.Errorf("Failed to load key pair: %v", err)
+		zap.S().Errorf("Failed to load key pair: %v", err)
 	}
 
 	// define http server and server handler
@@ -58,17 +59,17 @@ func main() {
 	// start webhook server
 	go func() {
 		if err := server.ListenAndServeTLS("", ""); err != nil {
-			glog.Errorf("Failed to listen and serve webhook server: %v", err)
+			zap.S().Errorf("Failed to listen and serve webhook server: %v", err)
 		}
 	}()
 
-	glog.Infof("Server running listening in port: %s", port)
+	zap.S().Infof("Server running listening in port: %s", port)
 
 	// listen for shutdown signal
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	<-signalChan
 
-	glog.Info("Got shutdown signal, shutting down webhook server gracefully...")
+	zap.S().Infow("Got shutdown signal, shutting down webhook server gracefully...")
 	server.Shutdown(context.Background())
 }

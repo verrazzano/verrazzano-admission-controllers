@@ -6,11 +6,10 @@ package pkg
 import (
 	"context"
 	"fmt"
-
 	s "strings"
 
-	"github.com/golang/glog"
 	v1beta1v8o "github.com/verrazzano/verrazzano-crd-generator/pkg/apis/verrazzano/v1beta1"
+	"go.uber.org/zap"
 	"k8s.io/api/admission/v1beta1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,7 +30,7 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 		}
 		if !modelFound {
 			message := fmt.Sprintf("binding is referencing model %s that does not exist in namespace %s", binding.Spec.ModelName, arRequest.Request.Namespace)
-			glog.Error(message)
+			zap.S().Errorw(message)
 			return errorAdmissionReview(message)
 		}
 	}
@@ -49,7 +48,7 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 	domainNameLen := len(domainName)
 	if domainNameLen > MaxVmiDomainNameLen {
 		message := fmt.Sprintf("the VMI domain name is greater than %d characters: %s.  The binding name %s is %d characters long.  Reduce the size by using a binding name that is at least %d characters shorter.", MaxVmiDomainNameLen, domainName, binding.Name, len(binding.Name), domainNameLen-MaxVmiDomainNameLen)
-		glog.Error(message)
+		zap.S().Errorw(message)
 		return errorAdmissionReview(message)
 	}
 
@@ -82,7 +81,7 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 		return errorAdmissionReview(response)
 	}
 
-	glog.Info("validation of binding successful")
+	zap.S().Infow("validation of binding successful")
 	return v1beta1.AdmissionReview{}
 }
 
@@ -90,7 +89,7 @@ func validateBinding(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verra
 // A validate k8s resource name must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an
 // alphanumeric character.  We use k8s validation functions to check the validity of names.
 func validateBindingResourceNames(binding v1beta1v8o.VerrazzanoBinding) string {
-	glog.V(6).Info("In validateBindingResourceNames code")
+	zap.S().Debugw("In validateBindingResourceNames code")
 
 	var errMessages []string
 
@@ -117,13 +116,13 @@ func validateBindingResourceNames(binding v1beta1v8o.VerrazzanoBinding) string {
 
 // Validate that the default namespace is not used in a binding placement
 func validatePlacementNamespaces(binding v1beta1v8o.VerrazzanoBinding) string {
-	glog.V(6).Info("In validatePlacementNamespaces code")
+	zap.S().Debugw("In validatePlacementNamespaces code")
 
 	for _, placement := range binding.Spec.Placement {
 		for _, namespace := range placement.Namespaces {
 			if namespace.Name == "default" {
 				message := "default namespace is not allowed in placements of binding"
-				glog.Error(message)
+				zap.S().Errorw(message)
 				return message
 			}
 		}
@@ -134,7 +133,7 @@ func validatePlacementNamespaces(binding v1beta1v8o.VerrazzanoBinding) string {
 
 // Validate componets in the binding
 func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) []string {
-	glog.V(6).Info("In validateComponents code")
+	zap.S().Debugw("In validateComponents code")
 
 	var errMessages []string
 	// Get all components referenced in the binding
@@ -211,14 +210,14 @@ func validateComponents(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Ve
 	}
 
 	if len(errMessages) > 0 {
-		glog.Error(s.Join(errMessages, ", "))
+		zap.S().Errorw(s.Join(errMessages, ", "))
 	}
 	return errMessages
 }
 
 // Validate ingressBindings
 func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBinding) []string {
-	glog.V(6).Info("In validateIngressBinding code")
+	zap.S().Debugw("In validateIngressBinding code")
 
 	var errMessages []string
 	for _, ingressBinding := range ingressBindings {
@@ -257,7 +256,7 @@ func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBindin
 
 		if errFound {
 			errMessages = append(errMessages, fmt.Sprintf("Invalid DNS name: [%s]\n", dnsName))
-			glog.Error(s.Join(errMessages, ", "))
+			zap.S().Errorw(s.Join(errMessages, ", "))
 		}
 	}
 	return errMessages
@@ -265,7 +264,7 @@ func validateIngressBinding(ingressBindings []v1beta1v8o.VerrazzanoIngressBindin
 
 // Validate that each placement name has a matching VerrazzanoManagedClusters custom resource
 func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) string {
-	glog.V(6).Info("In validateClusters code")
+	zap.S().Debugw("In validateClusters code")
 
 	var missingClusters = ""
 	for _, placement := range binding.Spec.Placement {
@@ -277,7 +276,7 @@ func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verr
 			missingClusters += placement.Name
 		} else if err != nil {
 			message := fmt.Sprintf("failed to get referenced cluster %s in namespace %s: %v", placement.Name, arRequest.Request.Namespace, err)
-			glog.Error(message)
+			zap.S().Errorw(message)
 			return message
 		}
 	}
@@ -285,7 +284,7 @@ func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verr
 	var message = ""
 	if missingClusters != "" {
 		message = fmt.Sprintf("binding references cluster(s) \"%s\" that do not exist in namespace %s", missingClusters, arRequest.Request.Namespace)
-		glog.Error(message)
+		zap.S().Errorw(message)
 	}
 
 	return message
@@ -293,7 +292,7 @@ func validateClusters(arRequest v1beta1.AdmissionReview, binding v1beta1v8o.Verr
 
 // Validate that each secret in the binding has a matching secret in the default namespace
 func validateBindingSecrets(binding v1beta1v8o.VerrazzanoBinding, clientsets *Clientsets) string {
-	glog.V(6).Info("In validateBindingSecrets code")
+	zap.S().Debugw("In validateBindingSecrets code")
 
 	// Check database credentials
 	for _, dbBinding := range binding.Spec.DatabaseBindings {
@@ -308,17 +307,17 @@ func validateBindingSecrets(binding v1beta1v8o.VerrazzanoBinding, clientsets *Cl
 
 // Get a secret and check for errors
 func getBindingSecrets(clientsets *Clientsets, secretName string, secretType string, compName string) string {
-	glog.V(6).Info("In getBindingSecrets code")
+	zap.S().Debugw("In getBindingSecrets code")
 
 	_, err := clientsets.K8sClient.CoreV1().Secrets("default").Get(context.TODO(), secretName, metav1.GetOptions{})
 	if k8sErrors.IsNotFound(err) {
 		message := fmt.Sprintf("binding references %s \"%s\" for %s.  This secret must be created in the default namespace before proceeding.", secretType, secretName, compName)
-		glog.Error(message)
+		zap.S().Errorw(message)
 		return message
 	}
 	if err != nil {
 		message := fmt.Sprintf("failed to get referenced secret %s in namespace default: %v", secretName, err)
-		glog.Error(message)
+		zap.S().Errorw(message)
 		return message
 	}
 
