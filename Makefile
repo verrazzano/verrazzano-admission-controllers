@@ -65,6 +65,7 @@ go-ineffassign:
 .PHONY: go-mod
 go-mod:
 	$(GO) mod vendor
+	$(GO) mod tidy
 
 	# Obtain verrazzano-crd-generator version
 	mkdir -p vendor/${CRDGEN_PATH}/${CRD_PATH}
